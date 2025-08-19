@@ -1,0 +1,71 @@
+# Python
+__pycache__/
+*.py[cod]
+*$py.class
+*.so
+.Python
+build/
+develop-eggs/
+dist/
+downloads/
+eggs/
+.eggs/
+lib/
+lib64/
+parts/
+sdist/
+var/
+wheels/
+*.egg-info/
+.installed.cfg
+*.egg
+
+# Virtual environments
+venv/
+venv_*/
+env/
+ENV/
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+
+# OS
+.DS_Store
+.DS_Store?
+._*
+.Spotlight-V100
+.Trashes
+ehthumbs.db
+Thumbs.db
+
+# Project specific
+# 生成的播客輸出
+*_output/
+podcast_output/
+integrated_output/
+temp_*/
+
+# 生成的腳本和音頻（但保留範例）
+data/transcripts/transcript_*.txt
+data/audio/*.mp3
+data/audio/*.wav
+
+# 臨時配置
+temp_config.yaml
+
+# API Keys（已在 .env 中）
+.env.local
+.env.production
+.env.development
+
+# Logs
+*.log
+logs/
+
+# Backup files
+*.bak
+*.backup

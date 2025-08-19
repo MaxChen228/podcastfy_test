@@ -1,0 +1,72 @@
+# 播客生成配置文件
+# 這個檔案讓你輕鬆調整所有播客生成參數
+
+# === 基本設定 ===
+basic:
+  # 英語等級：A1, A2, B1, B2, C1, C2
+  english_level: "A2"
+  
+  # 目標長度（分鐘）
+  target_minutes: 1
+  
+  # 風格指令
+  style_instructions: "conversational, engaging, educational"
+
+# === 輸入來源 ===
+input:
+  # 輸入來源（支援多種格式）
+  source: "./sample_article.txt"
+  
+  # 輸入類型：auto, text, pdf, url, youtube
+  # auto = 自動檢測類型
+  type: "auto"
+
+# === TTS 語音設定 ===
+voices:
+  # Gemini TTS 主持人語音
+  # 選項：Kore, Puck, Charon, Fenrir, Aoede
+  host_voice: "Kore"
+  
+  # Gemini TTS 專家語音  
+  expert_voice: "Puck"
+
+# === 進階設定 ===
+advanced:
+  # 是否使用 Podcastfy 的 TTS（建議：false，使用 Gemini Multi-Speaker TTS）
+  use_podcastfy_tts: false
+  
+  # 輸出目錄
+  output_dir: "./podcast_output"
+  
+  # LLM 模型（用於腳本生成）
+  llm_model: "gemini-2.5-flash"
+  
+  # TTS 模型
+  tts_model: "gemini-2.5-flash-preview-tts"
+
+# === 多模態輸入範例 ===
+examples:
+  # 文本文件
+  text_file: "./your_article.txt"
+  
+  # PDF 文檔
+  pdf_file: "./document.pdf"
+  
+  # 網頁文章
+  web_article: "https://example.com/article"
+  
+  # YouTube 影片
+  youtube_video: "https://youtube.com/watch?v=VIDEO_ID"
+
+# === 英語等級說明 ===
+# A1: 初學者（基礎詞彙，簡單句型）
+# A2: 初級（日常話題，基本語法）
+# B1: 中級（工作、學習話題，複雜語法）
+# B2: 中上級（抽象概念，流暢表達）
+# C1: 高級（專業內容，精確表達）
+# C2: 精通（母語水準，複雜思辨）
+
+# === 時間長度建議 ===
+# 1-2 分鐘：快速概覽
+# 3-5 分鐘：深入討論
+# 5-10 分鐘：完整分析
