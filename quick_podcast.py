@@ -12,7 +12,8 @@ from pathlib import Path
 from integrated_podcast_generator import generate_from_config, IntegratedPodcastConfig
 
 
-def create_quick_config(level: str, article: str, minutes: int, output_dir: str = "./podcast_output"):
+def create_quick_config(level: str, article: str, minutes: int, output_dir: str = "./podcast_output", 
+                        host_voice: str = "Kore", expert_voice: str = "Puck"):
     """快速創建配置"""
     config_data = {
         'basic': {
@@ -25,8 +26,8 @@ def create_quick_config(level: str, article: str, minutes: int, output_dir: str 
             'type': 'auto'
         },
         'voices': {
-            'host_voice': 'Kore',
-            'expert_voice': 'Puck'
+            'host_voice': host_voice,
+            'expert_voice': expert_voice
         },
         'advanced': {
             'use_podcastfy_tts': False,  # 使用 Gemini Multi-Speaker TTS
@@ -104,9 +105,14 @@ def main():
                 article = sys.argv[2]
                 minutes = int(sys.argv[3])
                 output_dir = sys.argv[4] if len(sys.argv) > 4 else "./podcast_output"
+                host_voice = sys.argv[5] if len(sys.argv) > 5 else "Kore"
+                expert_voice = sys.argv[6] if len(sys.argv) > 6 else "Puck"
             else:
-                print("使用方式: python quick_podcast.py <等級> <文章> <分鐘數> [輸出目錄]")
+                print("使用方式: python quick_podcast.py <等級> <文章> <分鐘數> [輸出目錄] [主持人聲線] [專家聲線]")
                 print("範例: python quick_podcast.py B2 ./sample_article.txt 2")
+                print("聲線範例: python quick_podcast.py B2 ./sample_article.txt 2 ./output Aoede Charon")
+                print("")
+                print("可用聲線: Kore（溫和女聲）, Puck（活潑男聲）, Charon（沈穩男聲）, Fenrir（專業男聲）, Aoede（優雅女聲）")
                 return False
         else:
             # 從配置文件讀取設定
@@ -120,12 +126,16 @@ def main():
                 article = config_data['input']['source']
                 minutes = config_data['basic']['target_minutes']
                 output_dir = config_data['advanced']['output_dir']
+                host_voice = config_data['voices']['host_voice']
+                expert_voice = config_data['voices']['expert_voice']
             else:
                 print("🎯 使用預設設定生成播客...")
                 level = "B2"
                 article = "./sample_article.txt"
                 minutes = 2
                 output_dir = "./podcast_output"
+                host_voice = "Kore"
+                expert_voice = "Puck"
         
         print(f"\n" + "=" * 50)
         print(f"🎯 生成設定確認:")
@@ -133,6 +143,8 @@ def main():
         print(f"  📄 文章: {article}")
         print(f"  ⏱️ 長度: {minutes} 分鐘")
         print(f"  📁 輸出: {output_dir}")
+        print(f"  🎙️ 主持人: {host_voice}")
+        print(f"  👨‍🏫 專家: {expert_voice}")
         print("=" * 50)
         
         # 非互動模式直接生成
@@ -151,7 +163,8 @@ def main():
         
         # 創建配置並生成
         print(f"\n🚀 開始生成...")
-        config_path = create_quick_config(level, article, minutes, output_dir)
+        # 統一使用完整參數創建配置
+        config_path = create_quick_config(level, article, minutes, output_dir, host_voice, expert_voice)
         
         # 載入配置並生成
         from integrated_podcast_generator import IntegratedPodcastGenerator
@@ -174,6 +187,11 @@ def main():
             if "audio_file" in result:
                 print(f"\n🔗 音頻檔案路徑:")
                 print(f"   {result['audio_file']}")
+            
+            # 顯示性能指標文件位置
+            if "performance_metrics_file" in result:
+                print(f"\n📊 性能指標檔案:")
+                print(f"   {result['performance_metrics_file']}")
             
             return True
         else:

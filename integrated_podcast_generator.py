@@ -18,6 +18,14 @@ from typing import Dict, Any, Optional, Union
 from dataclasses import dataclass
 from urllib.parse import urlparse
 
+# Performance tracking
+from performance_tracker import (
+    PerformanceTracker, 
+    PerformanceReport, 
+    time_stage,
+    create_performance_tracker
+)
+
 # Google Gemini imports
 try:
     from google import genai
@@ -66,14 +74,17 @@ class IntegratedPodcastConfig:
     style_instructions: str = "conversational, engaging, educational"
     output_dir: str = "./integrated_output"
     use_podcastfy_tts: bool = False  # 是否使用 Podcastfy 的 TTS（否則用 Gemini）
+    llm_model: str = "gemini-2.5-flash"  # LLM 模型名稱
 
 
 class IntegratedPodcastGenerator:
     """整合式播客生成器"""
     
-    def __init__(self):
+    def __init__(self, enable_performance_tracking: bool = True):
         self.gemini_client = genai.Client(api_key=GEMINI_API_KEY)
         self.supported_input_types = ['text', 'pdf', 'url', 'youtube']
+        self.performance_tracker: Optional[PerformanceTracker] = None
+        self.enable_performance_tracking = enable_performance_tracking
     
     @classmethod
     def from_config_file(cls, config_path: str = "./podcast_config.yaml"):
@@ -100,9 +111,11 @@ class IntegratedPodcastGenerator:
             expert_voice=config_data['voices']['expert_voice'],
             style_instructions=config_data['basic']['style_instructions'],
             output_dir=config_data['advanced']['output_dir'],
-            use_podcastfy_tts=config_data['advanced']['use_podcastfy_tts']
+            use_podcastfy_tts=config_data['advanced']['use_podcastfy_tts'],
+            llm_model=config_data['advanced']['llm_model']
         )
         
+    @time_stage("輸入類型檢測")
     def detect_input_type(self, input_source: str) -> str:
         """自動檢測輸入類型"""
         # 檢查是否為 URL
@@ -122,6 +135,86 @@ class IntegratedPodcastGenerator:
         # 預設為文本內容
         return 'text'
     
+    def calculate_length_parameters(self, target_minutes: int) -> dict:
+        """計算精確的長度控制參數"""
+        # 基於目標時間的參數映射表
+        length_mapping = {
+            # 目標時間: (word_count, max_num_chunks, min_chunk_size)
+            0.5: (50, 2, 150),
+            1: (80, 2, 200),
+            2: (150, 3, 300),
+            3: (250, 4, 350),
+            5: (400, 5, 400),
+            10: (800, 7, 500),
+            15: (1200, 8, 600),
+            20: (1600, 10, 600),
+        }
+        
+        # 找到最接近的映射值
+        closest_time = min(length_mapping.keys(), key=lambda x: abs(x - target_minutes))
+        word_count, max_chunks, min_chunk_size = length_mapping[closest_time]
+        
+        # 如果超出預設範圍，按比例計算
+        if target_minutes > max(length_mapping.keys()):
+            word_count = target_minutes * 80  # 保守估算每分鐘80字
+            max_chunks = min(15, target_minutes // 2)  # 最多15輪，每2分鐘一輪
+            min_chunk_size = 600
+        
+        logger.info(f"目標時長: {target_minutes}分鐘 → 字數: {word_count}, 輪次: {max_chunks}, 最小塊: {min_chunk_size}")
+        
+        return {
+            "word_count": word_count,
+            "max_num_chunks": max_chunks,
+            "min_chunk_size": min_chunk_size
+        }
+    
+    def validate_and_trim_script(self, script: str, length_params: dict, target_minutes: int) -> str:
+        """驗證並修剪腳本到目標長度"""
+        words = script.split()
+        actual_word_count = len(words)
+        target_word_count = length_params["word_count"]
+        tolerance = int(target_word_count * 0.3)  # 30% 容錯率
+        
+        logger.info(f"腳本長度檢查: 目標 {target_word_count} 字，實際 {actual_word_count} 字")
+        
+        if actual_word_count <= target_word_count + tolerance:
+            logger.info("✅ 腳本長度在可接受範圍內")
+            return script
+        
+        # 需要截斷
+        logger.warning(f"⚠️ 腳本過長，從 {actual_word_count} 字截斷到 {target_word_count} 字")
+        
+        # 尋找合適的截斷點（對話邊界）
+        lines = script.split('\n')
+        trimmed_lines = []
+        current_word_count = 0
+        
+        for line in lines:
+            line_words = len(line.split())
+            if current_word_count + line_words > target_word_count:
+                # 如果加入這行會超出限制，檢查是否為對話結束點
+                if line.startswith('</Person') or current_word_count > target_word_count * 0.8:
+                    # 在對話邊界停止，或已達到80%目標
+                    break
+            
+            trimmed_lines.append(line)
+            current_word_count += line_words
+        
+        trimmed_script = '\n'.join(trimmed_lines)
+        
+        # 確保腳本以完整的對話結束
+        if not trimmed_script.rstrip().endswith('</Person1>') and not trimmed_script.rstrip().endswith('</Person2>'):
+            # 如果沒有正確結束，添加結束標記
+            if '<Person1>' in trimmed_script and not trimmed_script.rstrip().endswith('</Person1>'):
+                trimmed_script += '</Person1>'
+            elif '<Person2>' in trimmed_script and not trimmed_script.rstrip().endswith('</Person2>'):
+                trimmed_script += '</Person2>'
+        
+        final_word_count = len(trimmed_script.split())
+        logger.info(f"✂️ 腳本截斷完成: {final_word_count} 字")
+        
+        return trimmed_script
+
     def save_wave_file(self, filename: str, pcm_data: bytes, channels: int = 1, rate: int = 24000, sample_width: int = 2):
         """保存 WAV 音頻檔案"""
         with wave.open(filename, "wb") as wf:
@@ -130,6 +223,7 @@ class IntegratedPodcastGenerator:
             wf.setframerate(rate)
             wf.writeframes(pcm_data)
     
+    @time_stage("Podcastfy 腳本生成")
     def generate_script_with_podcastfy(self, config: IntegratedPodcastConfig) -> Dict[str, Any]:
         """使用 Podcastfy 生成對話腳本"""
         logger.info("📝 使用 Podcastfy 生成對話腳本...")
@@ -139,24 +233,29 @@ class IntegratedPodcastGenerator:
             config.input_type = self.detect_input_type(config.input_source)
             logger.info(f"檢測到輸入類型: {config.input_type}")
         
-        # 根據時長計算字數
-        word_count = config.target_minutes * 150  # 約 150 字/分鐘
+        # 根據時長計算精確的長度控制參數
+        length_params = self.calculate_length_parameters(config.target_minutes)
         
-        # 準備 Podcastfy 配置
+        # 準備 Podcastfy 配置（使用精確的長度控制）
         conversation_config = {
-            "word_count": word_count,
+            "word_count": length_params["word_count"],
+            "max_num_chunks": length_params["max_num_chunks"],
+            "min_chunk_size": length_params["min_chunk_size"],
             "conversation_style": ["engaging", "educational"],
             "language": "English",
             "dialogue_structure": "two_speakers",
             "custom_instructions": f"""
                 Create a podcast conversation for {config.english_level} English learners.
-                Requirements:
+                STRICT LENGTH REQUIREMENTS:
+                - MAXIMUM {length_params["word_count"]} words total (HARD LIMIT)
+                - EXACTLY {length_params["max_num_chunks"]} conversation rounds maximum
+                - Target duration: {config.target_minutes} minute(s)
                 - Use appropriate vocabulary for {config.english_level} level
-                - Length: approximately {word_count} words
                 - Style: {config.style_instructions}
                 - Format: Natural conversation between Host and Expert
                 - Host asks questions and guides the conversation
                 - Expert provides insights and explanations
+                - STOP generating when approaching word limit
             """,
             "roles": ["Host", "Expert"],
             "output_folder": config.output_dir
@@ -179,7 +278,7 @@ class IntegratedPodcastGenerator:
                 
                 result = generate_podcast(
                     text=content,
-                    llm_model_name="gemini-2.5-flash",
+                    llm_model_name=config.llm_model,
                     api_key_label="GEMINI_API_KEY",
                     conversation_config=conversation_config,
                     transcript_only=not config.use_podcastfy_tts  # True = 只生成腳本，給 Gemini TTS 使用
@@ -188,28 +287,28 @@ class IntegratedPodcastGenerator:
             elif config.input_type == 'pdf':
                 result = generate_podcast(
                     pdf_file_path=config.input_source,
-                    llm_model_name="gemini-2.5-pro",
+                    llm_model_name=config.llm_model,
                     api_key_label="GEMINI_API_KEY",
                     conversation_config=conversation_config,
-                    tts_model="gemini" if not config.use_podcastfy_tts else "openai"
+                    transcript_only=not config.use_podcastfy_tts
                 )
                 
             elif config.input_type == 'url':
                 result = generate_podcast(
                     urls=[config.input_source],
-                    llm_model_name="gemini-2.5-pro",
+                    llm_model_name=config.llm_model,
                     api_key_label="GEMINI_API_KEY",
                     conversation_config=conversation_config,
-                    tts_model="gemini" if not config.use_podcastfy_tts else "openai"
+                    transcript_only=not config.use_podcastfy_tts
                 )
                 
             elif config.input_type == 'youtube':
                 result = generate_podcast(
                     youtube_urls=[config.input_source],
-                    llm_model_name="gemini-2.5-pro",
+                    llm_model_name=config.llm_model,
                     api_key_label="GEMINI_API_KEY",
                     conversation_config=conversation_config,
-                    tts_model="gemini" if not config.use_podcastfy_tts else "openai"
+                    transcript_only=not config.use_podcastfy_tts
                 )
             else:
                 raise ValueError(f"不支援的輸入類型: {config.input_type}")
@@ -227,6 +326,9 @@ class IntegratedPodcastGenerator:
                 transcript_file = transcript_files[0]
                 with open(transcript_file, 'r', encoding='utf-8') as f:
                     script = f.read()
+                
+                # 長度驗證和後處理截斷
+                script = self.validate_and_trim_script(script, length_params, config.target_minutes)
                 
                 logger.info(f"✅ 腳本生成完成（{len(script.split())} words）")
                 
@@ -261,6 +363,7 @@ class IntegratedPodcastGenerator:
                 "error": str(e)
             }
     
+    @time_stage("Gemini TTS 音頻生成")
     def generate_audio_from_script(self, script: str, config: IntegratedPodcastConfig) -> bytes:
         """使用 Gemini Multi-Speaker TTS 生成音頻"""
         logger.info("🎵 使用 Gemini Multi-Speaker TTS 生成音頻...")
@@ -271,16 +374,32 @@ class IntegratedPodcastGenerator:
 {script}"""
         
         try:
+            # 使用多說話者配置
             response = self.gemini_client.models.generate_content(
                 model="gemini-2.5-flash-preview-tts",
                 contents=tts_prompt,
                 config=types.GenerateContentConfig(
                     response_modalities=["AUDIO"],
                     speech_config=types.SpeechConfig(
-                        voice_config=types.VoiceConfig(
-                            prebuilt_voice_config=types.PrebuiltVoiceConfig(
-                                voice_name=config.host_voice,
-                            )
+                        multi_speaker_voice_config=types.MultiSpeakerVoiceConfig(
+                            speaker_voice_configs=[
+                                types.SpeakerVoiceConfig(
+                                    speaker="Person1",  # 主持人
+                                    voice_config=types.VoiceConfig(
+                                        prebuilt_voice_config=types.PrebuiltVoiceConfig(
+                                            voice_name=config.host_voice
+                                        )
+                                    )
+                                ),
+                                types.SpeakerVoiceConfig(
+                                    speaker="Person2",  # 專家
+                                    voice_config=types.VoiceConfig(
+                                        prebuilt_voice_config=types.PrebuiltVoiceConfig(
+                                            voice_name=config.expert_voice
+                                        )
+                                    )
+                                )
+                            ]
                         )
                     )
                 )
@@ -297,11 +416,26 @@ class IntegratedPodcastGenerator:
     
     def generate(self, config: IntegratedPodcastConfig) -> Dict[str, Any]:
         """完整的整合生成流程"""
+        # 初始化性能追蹤
+        if self.enable_performance_tracking:
+            self.performance_tracker = create_performance_tracker()
+            self.performance_tracker.start_session({
+                "input_source": config.input_source,
+                "input_type": config.input_type,
+                "english_level": config.english_level,
+                "target_minutes": config.target_minutes,
+                "host_voice": config.host_voice,
+                "expert_voice": config.expert_voice,
+                "use_podcastfy_tts": config.use_podcastfy_tts
+            })
+        
         print("\n" + "=" * 60)
         print("🚀 整合式播客生成")
         print(f"📥 輸入來源: {config.input_source}")
         print(f"🎯 英語等級: {config.english_level}")
         print(f"⏱️ 目標長度: {config.target_minutes} 分鐘")
+        if self.performance_tracker:
+            print(f"📊 性能追蹤: {self.performance_tracker.session_id}")
         print("=" * 60)
         
         # 創建輸出目錄
@@ -375,7 +509,8 @@ class IntegratedPodcastGenerator:
             print(f"📝 腳本檔案: {script_file.name} ({len(script.split())} words)")
             print("=" * 60)
             
-            return {
+            # 完成性能追蹤
+            result = {
                 "status": "success",
                 "output_dir": str(session_dir),
                 "audio_file": str(audio_file),
@@ -383,12 +518,50 @@ class IntegratedPodcastGenerator:
                 "metadata": metadata
             }
             
+            if self.performance_tracker:
+                # 結束性能追蹤會話
+                performance_metrics = self.performance_tracker.finish_session(
+                    success=True,
+                    output_files={
+                        "audio": str(audio_file),
+                        "script": str(script_file),
+                        "metadata": str(metadata_file)
+                    }
+                )
+                
+                # 保存性能指標
+                try:
+                    metrics_file = self.performance_tracker.save_metrics(str(session_dir))
+                    result["performance_metrics_file"] = metrics_file
+                except Exception as e:
+                    logger.warning(f"⚠️ 保存性能指標失敗: {e}")
+                
+                # 顯示性能報告
+                print("\n" + PerformanceReport.generate_console_report(self.performance_tracker))
+            
+            return result
+            
         except Exception as e:
             print(f"\n❌ 播客生成失敗: {e}")
-            return {
+            
+            # 在錯誤情況下也完成性能追蹤
+            result = {
                 "status": "error",
                 "error": str(e)
             }
+            
+            if self.performance_tracker:
+                try:
+                    self.performance_tracker.finish_session(success=False)
+                    metrics_file = self.performance_tracker.save_metrics("./performance_logs")
+                    result["performance_metrics_file"] = metrics_file
+                    
+                    # 顯示錯誤情況下的性能報告
+                    print("\n" + PerformanceReport.generate_console_report(self.performance_tracker))
+                except Exception as tracking_error:
+                    logger.warning(f"⚠️ 性能追蹤錯誤: {tracking_error}")
+            
+            return result
 
 
 def generate_from_config(config_path: str = "./podcast_config.yaml"):

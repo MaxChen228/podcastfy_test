@@ -6,7 +6,8 @@ basic:
   # 英語等級：A1, A2, B1, B2, C1, C2
   english_level: "A2"
   
-  # 目標長度（分鐘）
+  # 目標長度（分鐘）- 現在有精確控制！
+  # 0.5分鐘: ~50字, 1分鐘: ~80字, 2分鐘: ~150字, 5分鐘: ~400字
   target_minutes: 1
   
   # 風格指令
@@ -23,12 +24,20 @@ input:
 
 # === TTS 語音設定 ===
 voices:
-  # Gemini TTS 主持人語音
-  # 選項：Kore, Puck, Charon, Fenrir, Aoede
+  # Gemini Multi-Speaker TTS 主持人語音（Person1）
+  # 可用聲線：Kore（溫和女聲）, Puck（活潑男聲）, Charon（沈穩男聲）, Fenrir（專業男聲）, Aoede（優雅女聲）
   host_voice: "Kore"
   
-  # Gemini TTS 專家語音  
+  # Gemini Multi-Speaker TTS 專家語音（Person2）
+  # 建議配對：Kore+Puck（女主持+男專家）, Aoede+Charon（女專家+男主持）, Fenrir+Aoede（男專業+女優雅）
   expert_voice: "Puck"
+  
+  # 聲線特色說明：
+  # • Kore: 溫和、親切的女聲，適合主持人
+  # • Puck: 活潑、年輕的男聲，適合專家解說
+  # • Charon: 沈穩、權威的男聲，適合嚴肅話題
+  # • Fenrir: 專業、清晰的男聲，適合技術內容
+  # • Aoede: 優雅、文藝的女聲，適合文化話題
 
 # === 進階設定 ===
 advanced:
