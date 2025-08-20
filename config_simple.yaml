@@ -1,0 +1,103 @@
+# ╔══════════════════════════════════════════════════════════════════════════╗
+# ║                    初學者自然對話配置 (A1/A2 Natural Config)                ║
+# ║                    低知識密度 + 自然探索 = 無壓力學習體驗                      ║
+# ╚══════════════════════════════════════════════════════════════════════════╝
+
+basic:
+  english_level: "A2"
+  podcast_length: "medium"  # 6-10分鐘，給足時間消化
+  style_instructions: "gentle, wondering, exploratory, patient"
+
+input:
+  sources:
+    - "https://tw.news.yahoo.com/麥克風沒關-川普曝蒲亭-為了我-達成協議-021649771.html"
+  type: "multi"
+
+voices:
+  host_voice: "Kore"      # 溫和女聲 - 溫柔探索者
+  expert_voice: "Puck"    # 活潑男聲 - 熱心分享者
+
+advanced:
+  use_podcastfy_tts: false
+  output_dir: "./output"
+  llm_model: "gemini-2.5-flash"
+  tts_model: "gemini-2.5-flash-preview-tts"
+  conversation_style: ["gentle", "exploratory", "patient"]
+  language: "English"
+
+podcastfy:
+  podcast_name: "Gentle Discoveries"
+  podcast_tagline: "Where curiosity meets understanding, one step at a time"
+  output_language: "English"
+  
+  # 溫和對話風格
+  conversation_style: 
+    - "gentle"              # 溫和的
+    - "wondering"           # 充滿疑問的
+    - "patient"             # 有耐心的
+    - "supportive"          # 支持性的
+    - "encouraging"         # 鼓勵的（但非教學式）
+  
+  # 角色：友善的探索夥伴
+  roles_person1: "Gentle Curious Friend"     # 溫和好奇的朋友
+  roles_person2: "Patient Knowledge Sharer"  # 有耐心的知識分享者
+  
+  # 緩慢展開的對話結構
+  dialogue_structure:
+    - "Friendly Opening & What Caught Our Attention"     # 友善開場，什麼吸引了我們
+    - "First Impressions & Initial Thoughts"             # 第一印象和初步想法
+    - "Understanding the Basics Together"                # 一起理解基礎
+    - "Exploring Different Angles Gently"                # 溫和探索不同角度
+    - "Making Sense of the Big Picture"                  # 理解整體圖像
+    - "Reflecting on What We Discovered"                 # 反思我們的發現
+  
+  # 適合初學者的自然技巧
+  engagement_techniques:
+    - "simple analogies"              # 簡單類比
+    - "everyday examples"             # 日常例子
+    - "gentle questioning"            # 溫和提問
+    - "patient exploration"           # 耐心探索
+    - "building understanding slowly" # 慢慢建立理解
+    - "natural repetition"            # 自然重複
+    - "encouraging discoveries"       # 鼓勵發現
+    
+  creativity: 0.3  # 低創意，保持簡單可理解
+  
+  # 初學者友善的對話方式
+  user_instructions: |
+    Create a gentle, natural conversation between two friends who are genuinely curious about this topic.
+    
+    AUDIENCE: Complete beginners (A1/A2) who need TIME and CONTEXT to understand.
+    
+    CONVERSATION STYLE:
+    - Think "two friends chatting over coffee" not "expert explaining to novice"
+    - One person notices something interesting, the other gets curious too
+    - They explore the topic together, helping each other understand
+    - Like: "Hmm, I'm not quite sure I get this part..." "Oh, maybe it's like when..."
+    
+    KNOWLEDGE DENSITY - VERY LOW:
+    - Spend lots of time on background and context
+    - Use simple, everyday language naturally
+    - Repeat key ideas in different ways organically
+    - Build understanding very gradually
+    - Use familiar analogies and concrete examples
+    - Allow pauses for mental processing
+    
+    NATURAL LEARNING MARKERS:
+    - "Wait, so you're saying..." (natural checking understanding)
+    - "That's like when..." (natural analogy-making)
+    - "I think I'm starting to see..." (gradual understanding)
+    - "Oh, that makes sense now!" (natural breakthrough moments)
+    
+    AVOID: Teaching phrases, instructional language, structured lessons
+    EMBRACE: Genuine discovery, shared wonder, collaborative understanding
+
+# 🎛️ 技術參數調整（針對初學者優化）
+technical_adjustments:
+  pace: "slow"                    # 緩慢節奏
+  interaction_level: "high"       # 高互動度
+  word_count: 2000               # 更多字數給解釋時間
+  max_num_chunks: 8              # 更多回合，每回合簡單一點
+  min_chunk_size: 400            # 較短區塊，避免資訊過載
+  tone: "friendly_supportive"     # 友善支持的語調
+  cultural_context: "universal"   # 通用文化背景

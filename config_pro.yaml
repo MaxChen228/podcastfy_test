@@ -1,0 +1,110 @@
+# ╔══════════════════════════════════════════════════════════════════════════╗
+# ║                   高級自然對話配置 (C1/C2 Natural Config)                   ║
+# ║                    高知識密度 + 專業討論 = 深度智識交流                       ║
+# ╚══════════════════════════════════════════════════════════════════════════╝
+
+basic:
+  english_level: "C1"
+  podcast_length: "medium"  # 6-10分鐘，高密度內容
+  style_instructions: "analytical, insightful, sophisticated, direct"
+
+input:
+  sources:
+    - "https://tw.news.yahoo.com/麥克風沒關-川普曝蒲亭-為了我-達成協議-021649771.html"
+  type: "multi"
+
+voices:
+  host_voice: "Aoede"     # 優雅女聲 - 敏銳分析者
+  expert_voice: "Fenrir"  # 專業男聲 - 深度思考者
+
+advanced:
+  use_podcastfy_tts: false
+  output_dir: "./output"
+  llm_model: "gemini-2.5-pro"      # 使用更強的模型
+  tts_model: "gemini-2.5-pro-preview-tts"
+  conversation_style: ["analytical", "sophisticated", "direct"]
+  language: "English"
+
+podcastfy:
+  podcast_name: "Sharp Minds"
+  podcast_tagline: "Where complex ideas meet clear thinking"
+  output_language: "English"
+  
+  # 高水準對話風格
+  conversation_style: 
+    - "analytical"          # 分析性的
+    - "sophisticated"       # 精深的
+    - "direct"              # 直接的
+    - "insightful"          # 有洞察力的
+    - "nuanced"             # 細緻入微的
+  
+  # 角色：平等的智識夥伴
+  roles_person1: "Sharp Analytical Mind"    # 敏銳的分析思維
+  roles_person2: "Insightful Synthesizer"   # 有洞察力的綜合者
+  
+  # 高效智識討論結構
+  dialogue_structure:
+    - "Immediate Context & Core Issues"          # 立即背景和核心問題
+    - "Critical Analysis & Key Insights"        # 批判分析和關鍵洞察
+    - "Deeper Implications & Connections"       # 深層含義和關聯
+    - "Nuanced Perspectives & Complications"    # 細緻觀點和複雜性
+    - "Strategic Synthesis & Future Outlook"    # 策略綜合和未來展望
+  
+  # 高級討論技巧
+  engagement_techniques:
+    - "sharp analysis"            # 敏銳分析
+    - "sophisticated connections" # 精深關聯
+    - "implicit assumptions"      # 隱含假設
+    - "strategic implications"    # 策略含義
+    - "nuanced distinctions"      # 細緻區別
+    - "systemic thinking"         # 系統性思考
+    - "critical evaluation"       # 批判評估
+    
+  creativity: 0.7  # 較高創意，支持複雜思考
+  
+  # 高級智識討論指令
+  user_instructions: |
+    Create a sophisticated conversation between two sharp thinkers analyzing this topic.
+    
+    AUDIENCE: Advanced speakers (C1/C2) who can handle complex ideas and professional discourse.
+    
+    CONVERSATION STYLE:
+    - Think "two experts discussing over dinner" not "explanation session"
+    - Both participants bring insights and build on each other's ideas
+    - Quick to identify core issues and implications
+    - Comfortable with nuance, ambiguity, and complexity
+    
+    KNOWLEDGE DENSITY - VERY HIGH:
+    - Assume foundational knowledge exists
+    - Jump quickly to sophisticated analysis
+    - Use professional terminology naturally
+    - Cover more conceptual ground efficiently
+    - Address multiple layers of meaning
+    - Connect to broader systems and patterns
+    
+    SOPHISTICATED MARKERS:
+    - "The real question here is..." (cutting to core issues)
+    - "What's particularly interesting is the way..." (pattern recognition)
+    - "This connects to the broader..." (systemic thinking)
+    - "The implications extend beyond..." (strategic thinking)
+    - "There's a tension here between..." (nuanced analysis)
+    
+    INTELLECTUAL DEPTH:
+    - Examine assumptions and frameworks
+    - Identify what's NOT being said
+    - Consider multiple stakeholder perspectives
+    - Anticipate second and third-order effects
+    - Connect to historical precedents or parallel cases
+    
+    AVOID: Over-explanation, basic examples, remedial clarification
+    EMBRACE: Intellectual rigor, sophisticated analysis, strategic thinking
+
+# 🎛️ 技術參數調整（針對高級優化）
+technical_adjustments:
+  pace: "fast"                    # 快速節奏
+  interaction_level: "low"        # 低互動度（更流暢）
+  word_count: 2500               # 高密度內容
+  max_num_chunks: 6              # 較少回合，每回合內容豐富
+  min_chunk_size: 900            # 較大區塊，深度分析
+  tone: "authoritative_analytical" # 權威分析語調
+  cultural_context: "professional" # 專業背景
