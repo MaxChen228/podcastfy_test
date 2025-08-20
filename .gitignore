@@ -4,28 +4,37 @@ __pycache__/
 *$py.class
 *.so
 .Python
-build/
-develop-eggs/
-dist/
-downloads/
-eggs/
-.eggs/
-lib/
-lib64/
-parts/
-sdist/
-var/
-wheels/
-*.egg-info/
-.installed.cfg
-*.egg
-
-# Virtual environments
 venv/
-venv*/
-venv_*/
+venv312/
 env/
 ENV/
+*.egg-info/
+dist/
+build/
+
+# 環境變數
+.env
+.env.local
+.env.*.local
+.env.backup*
+
+# 輸出資料夾
+output/
+audio/
+scripts/
+data/
+performance_logs/
+podcast_output/
+
+# 封存資料夾
+archive/
+
+# 測試和暫存
+*.log
+*.tmp
+temp_*
+test_output/
+test_tts.wav
 
 # IDE
 .vscode/
@@ -33,40 +42,11 @@ ENV/
 *.swp
 *.swo
 *~
-
-# OS
 .DS_Store
-.DS_Store?
-._*
-.Spotlight-V100
-.Trashes
-ehthumbs.db
-Thumbs.db
 
-# Project specific
-# 生成的播客輸出
-*_output/
-podcast_output/
-integrated_output/
-temp_*/
+# Jupyter
+.ipynb_checkpoints/
 
-# 生成的腳本和音頻（但保留範例）
-data/transcripts/transcript_*.txt
-data/audio/*.mp3
-data/audio/*.wav
-
-# 臨時配置
-temp_config.yaml
-
-# API Keys（已在 .env 中）
-.env.local
-.env.production
-.env.development
-
-# Logs
-*.log
-logs/
-
-# Backup files
-*.bak
-*.backup
+# 快取
+cache/
+*.cache

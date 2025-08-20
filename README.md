@@ -1,167 +1,166 @@
-# 🎙️ Podcastfy 測試環境
+# 🎙️ Podcastfy 播客生成系統
 
-這是一個獨立的測試環境，用於驗證 Podcastfy 是否能正常運作，以及測試與現有系統的整合。
-
-## 📋 前置需求
-
-- Python 3.10 或以上
-- ffmpeg（音頻處理）
-- OpenAI API Key
+一個模組化的播客生成工具，使用 AI 將各種內容（文章、PDF、網頁、YouTube）轉換成自然的對話式播客。
 
 ## 🚀 快速開始
 
-### 1. 設置環境
-
+### 1. 安裝依賴
 ```bash
-# 執行自動設置腳本
-./setup.sh
-
-# 或手動設置
-python3 -m venv venv
-source venv/bin/activate  # macOS/Linux
 pip install -r requirements.txt
 ```
 
-### 2. 配置 API Keys
-
-編輯 `.env` 檔案，確保已設置：
-```
-OPENAI_API_KEY=your-api-key-here
-```
-
-### 3. 執行測試
-
+### 2. 設置 API Key
 ```bash
-# 啟動虛擬環境
-source venv/bin/activate
-
-# 基礎功能測試
-python test_basic.py
-
-# 進階功能測試
-python test_advanced.py
-
-# 系統整合測試
-python test_integration.py
+# 複製 .env 範例並填入你的 API Key
+echo "GEMINI_API_KEY=你的_API_KEY" > .env
 ```
 
-## 📁 檔案結構
+### 3. 設定內容源
+編輯 `podcast_config.yaml`：
+```yaml
+input:
+  source: "你的文章.txt"  # 或 URL、PDF、YouTube 連結
+  type: "auto"            # 自動檢測類型
+
+basic:
+  english_level: "B2"     # A1-C2
+  target_minutes: 3       # 目標長度（分鐘）
+```
+
+### 4. 生成播客
+
+#### 🔧 開發模式（推薦）
+每步確認，可隨時中斷：
+```bash
+python podcast_workflow.py --mode dev
+```
+
+#### ⚡ 生產模式
+一鍵完成所有步驟：
+```bash
+python podcast_workflow.py --mode prod
+```
+
+## 📁 專案結構
 
 ```
 podcastfy_test/
-├── test_basic.py        # 基礎功能測試
-├── test_advanced.py     # 進階功能測試
-├── test_integration.py  # 整合測試
-├── setup.sh            # 環境設置腳本
-├── requirements.txt    # Python 依賴
-├── .env               # 環境變數配置
-├── output/            # 基礎測試輸出
-├── output_advanced/   # 進階測試輸出
-└── cache/            # 緩存目錄
+├── 📝 核心腳本
+│   ├── step1_generate_script.py    # 步驟1：生成腳本
+│   ├── step2_generate_audio.py     # 步驟2：生成音頻
+│   └── podcast_workflow.py         # 工作流控制器
+│
+├── ⚙️ 配置
+│   ├── podcast_config.yaml         # 主配置文件
+│   └── .env                        # API Keys（私密）
+│
+├── 📂 輸出
+│   └── output/
+│       ├── scripts/                # 生成的腳本
+│       └── audio/                  # 生成的音頻
+│
+└── 🗃️ 其他
+    ├── test_api.py                 # API 連線測試
+    └── archive/                    # 封存的舊檔案
+
 ```
 
-## 🧪 測試內容
+## 🎯 使用場景
 
-### 基礎測試 (test_basic.py)
-- ✅ Podcastfy 導入測試
-- ✅ 簡單文本轉播客
-- ✅ URL 內容轉播客
-- ✅ 中文內容處理
-
-### 進階測試 (test_advanced.py)
-- ✅ 多人對話生成
-- ✅ 自定義提示詞模板
-- ✅ 不同 TTS 提供商測試
-- ✅ 多種內容格式支援
-
-### 整合測試 (test_integration.py)
-- ✅ 與 ContentFetcher 整合
-- ✅ 與記憶系統整合
-- ✅ 性能對比分析
-- ✅ 錯誤處理機制
-
-## 🔧 常見問題
-
-### 1. ImportError: No module named 'podcastfy'
+### 場景1：開發調試
 ```bash
-pip install podcastfy --upgrade
+# 生成腳本，檢查內容
+python podcast_workflow.py --mode dev
+
+# 不滿意？調整配置重新生成
+vim podcast_config.yaml
+python podcast_workflow.py --mode dev
 ```
 
-### 2. ffmpeg not found
+### 場景2：批量生產
 ```bash
-# macOS
-brew install ffmpeg
-
-# Ubuntu/Debian
-sudo apt-get install ffmpeg
-
-# CentOS/RHEL
-sudo yum install ffmpeg
+# 確定流程後，自動執行
+python podcast_workflow.py --mode prod --auto-confirm
 ```
 
-### 3. OpenAI API 錯誤
-- 檢查 API Key 是否正確
-- 確認帳戶有足夠額度
-- 檢查網路連接
+### 場景3：單獨重做某步驟
+```bash
+# 只重新生成音頻（保留腳本）
+python podcast_workflow.py --mode custom --steps audio \
+  --script-dir ./output/scripts/script_20250820_143057
+```
 
-## 🎯 測試結果預期
+## 🎨 配置說明
 
-成功執行後，您應該看到：
+### 英語等級
+- **A1-A2**: 初學者，基礎詞彙
+- **B1-B2**: 中級，日常對話
+- **C1-C2**: 高級，專業內容
 
-1. **基礎測試**：
-   - 生成簡單的播客音頻檔案
-   - 中文內容正確處理
+### 時長建議
+- **1-2 分鐘**: 快速概覽
+- **3-5 分鐘**: 標準討論
+- **5-10 分鐘**: 深入分析
 
-2. **進階測試**：
-   - 多人對話播客生成
-   - 不同 TTS 服務測試結果
+### 語音選擇
+在 `podcast_config.yaml` 中設定：
+```yaml
+voices:
+  host_voice: "Kore"    # 溫和女聲
+  expert_voice: "Puck"  # 活潑男聲
+```
 
-3. **整合測試**：
-   - 與現有系統無縫整合
-   - 性能對比數據
+可選語音：
+- **Kore**: 溫和親切的女聲
+- **Puck**: 活潑年輕的男聲
+- **Charon**: 沈穩權威的男聲
+- **Fenrir**: 專業清晰的男聲
+- **Aoede**: 優雅文藝的女聲
 
-## 📊 性能基準
+## 🔍 常見問題
 
-| 測試項目 | 預期時間 | 備註 |
-|---------|---------|------|
-| 簡單文本 (200字) | < 5秒 | 不含 TTS |
-| 中文內容 (500字) | < 10秒 | 含腳本優化 |
-| 多人對話 (800字) | < 15秒 | 3個角色 |
+### Q: API Key 無效？
+```bash
+# 測試 API 連線
+python test_api.py
+```
 
-## 🔄 下一步
+### Q: 腳本太長/太短？
+調整 `podcast_config.yaml` 中的 `target_minutes`
 
-測試成功後，可以：
+### Q: 想要不同的對話風格？
+修改 `style_instructions` 和 `conversation_style`
 
-1. **整合到主專案**：
-   ```python
-   # 在主專案中使用
-   from src.podcast_factory import PodcastFactory
-   ```
+## 📊 支援的輸入格式
 
-2. **自定義配置**：
-   - 調整對話風格
-   - 配置多語言支援
-   - 設定不同 TTS 提供商
+- 📄 文本文件 (.txt, .md)
+- 📑 PDF 文檔
+- 🌐 網頁文章
+- 📺 YouTube 影片
 
-3. **優化性能**：
-   - 實現響應緩存
-   - 使用異步處理
-   - 配置本地 LLM
+## 🛠️ 進階配置
 
-## 📝 注意事項
+如需手動控制長度參數，在 `podcast_config.yaml` 中設定：
+```yaml
+advanced:
+  word_count: 500        # 覆蓋自動計算
+  max_num_chunks: 6      # 對話輪次
+  min_chunk_size: 600    # 最小塊大小
+```
 
-- 測試會產生 OpenAI API 費用（約 $0.01-0.05）
-- 首次執行需要下載模型，可能較慢
-- 生成的音頻檔案會保存在 output/ 目錄
+## 📝 開發筆記
 
-## 🐛 問題回報
+- 使用拆分架構便於調試和節省 API 成本
+- 腳本生成使用 Podcastfy + Gemini API
+- 音頻生成使用 Gemini Multi-Speaker TTS
+- 所有輸出保存在 `output/` 目錄
 
-如遇到問題，請檢查：
-1. Python 版本是否 >= 3.10
-2. 所有依賴是否正確安裝
-3. API Key 是否有效
-4. 網路連接是否正常
+## ⚠️ 注意事項
+
+1. **API 成本**: 音頻生成會消耗 API 配額，建議先在開發模式確認腳本
+2. **檔案大小**: PDF 和影片可能需要較長處理時間
+3. **語言支援**: 目前主要支援英語內容
 
 ---
 
-**提示**：執行 `./setup.sh` 會自動檢查環境並安裝所需依賴。
+💡 **提示**: 第一次使用建議用 `test_api.py` 測試連線，然後用開發模式熟悉流程。

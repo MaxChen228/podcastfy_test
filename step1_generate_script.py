@@ -93,7 +93,7 @@ def generate_script_only(config_path: str = "./podcast_config.yaml"):
         Use Person1 as Host and Person2 as Expert.
         """,
         "roles": ["Host", "Expert"],
-        "output_folder": "./data"
+        "output_folder": "./output"
     }
     
     print(f"🎯 Podcastfy 參數:")
@@ -170,7 +170,7 @@ def generate_script_only(config_path: str = "./podcast_config.yaml"):
             raise ValueError(f"不支援的輸入類型: {input_type}")
         
         # 查找生成的腳本檔案
-        transcript_dir = Path("./data/transcripts/")
+        transcript_dir = Path("./output/transcripts/")
         transcript_files = sorted(transcript_dir.glob("transcript*.txt"), 
                                 key=lambda x: x.stat().st_mtime, reverse=True)
         
@@ -186,7 +186,7 @@ def generate_script_only(config_path: str = "./podcast_config.yaml"):
             
             # 保存到專案目錄
             timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-            output_dir = Path(f"./scripts/script_{timestamp}")
+            output_dir = Path(f"./output/scripts/script_{timestamp}")
             output_dir.mkdir(parents=True, exist_ok=True)
             
             # 保存腳本

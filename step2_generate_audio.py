@@ -133,7 +133,7 @@ def generate_audio_from_script(script_dir: str):
         
         # 保存音頻檔案
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
-        output_dir = Path(f"./audio/audio_{timestamp}")
+        output_dir = Path(f"./output/audio/audio_{timestamp}")
         output_dir.mkdir(parents=True, exist_ok=True)
         
         audio_file = output_dir / "podcast.wav"
@@ -183,7 +183,7 @@ def generate_audio_from_script(script_dir: str):
 def generate_audio_from_latest():
     """從最新的腳本生成音頻"""
     # 查找最新的腳本目錄
-    scripts_dir = Path("./scripts")
+    scripts_dir = Path("./output/scripts")
     if not scripts_dir.exists():
         print("❌ 找不到 scripts 目錄")
         return None

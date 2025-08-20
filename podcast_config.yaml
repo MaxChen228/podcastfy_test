@@ -45,7 +45,7 @@ advanced:
   use_podcastfy_tts: false
   
   # 輸出目錄
-  output_dir: "./podcast_output"
+  output_dir: "./output"
   
   # LLM 模型（用於腳本生成）
   llm_model: "gemini-2.5-flash"
