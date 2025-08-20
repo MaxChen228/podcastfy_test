@@ -22,8 +22,7 @@ advanced:
   output_dir: "./output"
   llm_model: "gemini-2.5-flash"
   tts_model: "gemini-2.5-flash-preview-tts"
-  conversation_style: ["gentle", "exploratory", "patient"]
-  language: "English"
+  # 移除重複，統一在 podcastfy 區塊定義
 
 podcastfy:
   podcast_name: "Gentle Discoveries"

@@ -22,8 +22,7 @@ advanced:
   output_dir: "./output"
   llm_model: "gemini-2.5-pro"      # 使用更強的模型
   tts_model: "gemini-2.5-pro-preview-tts"
-  conversation_style: ["analytical", "sophisticated", "direct"]
-  language: "English"
+  # 移除重複，統一在 podcastfy 區塊定義
 
 podcastfy:
   podcast_name: "Sharp Minds"

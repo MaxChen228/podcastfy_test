@@ -44,9 +44,7 @@ advanced:
   llm_model: "gemini-2.5-flash"
   tts_model: "gemini-2.5-flash-preview-tts"
   
-  # 調整對話風格為自然探索
-  conversation_style: ["exploratory", "natural", "engaging"]
-  language: "English"
+  # 移除重複，統一在 podcastfy 區塊定義
   dialogue_structure: "two_speakers"
 
 # ┌─────────────────────────────────────────────────────────────────────────┐
