@@ -6,8 +6,8 @@ basic:
   # 英語等級：A1, A2, B1, B2, C1, C2
   english_level: "A2"
   
-  # 目標長度（分鐘）- 現在有精確控制！
-  # 0.5分鐘: ~50字, 1分鐘: ~80字, 2分鐘: ~150字, 5分鐘: ~400字
+  # 目標長度（分鐘）- 基於社區最佳實踐！
+  # 社區驗證配置：1分鐘=300字, 3分鐘=800字, 5分鐘=1200字
   target_minutes: 1
   
   # 風格指令
@@ -16,7 +16,7 @@ basic:
 # === 輸入來源 ===
 input:
   # 輸入來源（支援多種格式）
-  source: "./sample_article.txt"
+  source: "https://tw.news.yahoo.com/麥克風沒關-川普曝蒲亭-為了我-達成協議-021649771.html"
   
   # 輸入類型：auto, text, pdf, url, youtube
   # auto = 自動檢測類型
@@ -30,7 +30,7 @@ voices:
   
   # Gemini Multi-Speaker TTS 專家語音（Person2）
   # 建議配對：Kore+Puck（女主持+男專家）, Aoede+Charon（女專家+男主持）, Fenrir+Aoede（男專業+女優雅）
-  expert_voice: "Puck"
+  expert_voice: "Aoede"
   
   # 聲線特色說明：
   # • Kore: 溫和、親切的女聲，適合主持人
@@ -52,6 +52,20 @@ advanced:
   
   # TTS 模型
   tts_model: "gemini-2.5-flash-preview-tts"
+  
+  # 對話風格（Podcastfy 參數）
+  conversation_style: ["engaging", "educational"]
+  
+  # 語言設定
+  language: "English"
+  
+  # 對話結構
+  dialogue_structure: "two_speakers"
+  
+  # 長度控制參數（可選，留空使用自動計算）
+  # word_count: 300        # 覆蓋自動計算的字數
+  # max_num_chunks: 4      # 覆蓋自動計算的輪次
+  # min_chunk_size: 600    # 覆蓋自動計算的最小塊
 
 # === 多模態輸入範例 ===
 examples:

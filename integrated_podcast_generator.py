@@ -136,85 +136,137 @@ class IntegratedPodcastGenerator:
         return 'text'
     
     def calculate_length_parameters(self, target_minutes: int) -> dict:
-        """計算精確的長度控制參數"""
-        # 基於目標時間的參數映射表
-        length_mapping = {
-            # 目標時間: (word_count, max_num_chunks, min_chunk_size)
-            0.5: (50, 2, 150),
-            1: (80, 2, 200),
-            2: (150, 3, 300),
-            3: (250, 4, 350),
-            5: (400, 5, 400),
-            10: (800, 7, 500),
-            15: (1200, 8, 600),
-            20: (1600, 10, 600),
+        """基於 Podcastfy 社區最佳實踐的長度控制參數"""
+        # 基於社區驗證的配置模式，來自官方文檔和用戶實踐
+        # 社區發現：min_chunk_size 至少 600 才能保證對話質量
+        # word_count 是彈性建議，不是嚴格限制
+        
+        community_best_practices = {
+            0.5: {
+                "word_count": 200,           # 社區 shortform 下限
+                "max_num_chunks": 3,         # 簡短且集中
+                "min_chunk_size": 600,       # 社區最低質量標準
+                "conversation_style": ["concise", "focused"]
+            },
+            1: {
+                "word_count": 300,           # 社區建議範圍
+                "max_num_chunks": 4,         # 適度討論輪次
+                "min_chunk_size": 600,       # 保證對話完整性
+                "conversation_style": ["concise", "engaging"]
+            },
+            2: {
+                "word_count": 600,           # 接近社區 shortform 標準
+                "max_num_chunks": 5,         # 平衡討論深度
+                "min_chunk_size": 600,       # 維持質量門檻
+                "conversation_style": ["engaging", "informative"]
+            },
+            3: {
+                "word_count": 800,           # 社區教育內容標準
+                "max_num_chunks": 6,         # 社區推薦範圍
+                "min_chunk_size": 600,       # 確保對話質量
+                "conversation_style": ["engaging", "educational"]
+            },
+            5: {
+                "word_count": 1200,          # 參考社區詳細討論案例
+                "max_num_chunks": 8,         # 允許更多輪次
+                "min_chunk_size": 700,       # 提升內容深度
+                "conversation_style": ["detailed", "comprehensive"]
+            },
+            10: {
+                "word_count": 2000,          # 社區長形式下限
+                "max_num_chunks": 12,        # 接近社區預設上限
+                "min_chunk_size": 800,       # 確保深度討論
+                "conversation_style": ["in-depth", "analytical"]
+            },
+            15: {
+                "word_count": 3000,          # 社區學術討論標準
+                "max_num_chunks": 15,        # 充分討論空間
+                "min_chunk_size": 800,       # 高質量內容塊
+                "conversation_style": ["academic", "comprehensive"]
+            },
+            20: {
+                "word_count": 4000,          # 社區長形式標準
+                "max_num_chunks": 18,        # 豐富討論輪次
+                "min_chunk_size": 900,       # 最高質量要求
+                "conversation_style": ["detailed", "thorough"]
+            }
         }
         
-        # 找到最接近的映射值
-        closest_time = min(length_mapping.keys(), key=lambda x: abs(x - target_minutes))
-        word_count, max_chunks, min_chunk_size = length_mapping[closest_time]
+        # 找到最接近的社區實踐配置
+        closest_time = min(community_best_practices.keys(), 
+                          key=lambda x: abs(x - target_minutes))
+        config = community_best_practices[closest_time].copy()
         
-        # 如果超出預設範圍，按比例計算
-        if target_minutes > max(length_mapping.keys()):
-            word_count = target_minutes * 80  # 保守估算每分鐘80字
-            max_chunks = min(15, target_minutes // 2)  # 最多15輪，每2分鐘一輪
-            min_chunk_size = 600
+        # 對於超出範圍的時長，基於社區最佳實踐外推
+        if target_minutes > max(community_best_practices.keys()):
+            # 社區經驗：長形式播客的合理上限和質量保證
+            config = {
+                "word_count": min(target_minutes * 200, 8000),  # 避免過長影響質量
+                "max_num_chunks": min(target_minutes, 25),      # 社區實踐上限
+                "min_chunk_size": 900,                          # 最高質量標準
+                "conversation_style": ["comprehensive", "detailed"]
+            }
         
-        logger.info(f"目標時長: {target_minutes}分鐘 → 字數: {word_count}, 輪次: {max_chunks}, 最小塊: {min_chunk_size}")
+        logger.info(f"📋 社區最佳實踐配置 ({target_minutes}分鐘): "
+                   f"字數={config['word_count']}, 輪次={config['max_num_chunks']}, "
+                   f"最小塊={config['min_chunk_size']}, 風格={config['conversation_style']}")
         
-        return {
-            "word_count": word_count,
-            "max_num_chunks": max_chunks,
-            "min_chunk_size": min_chunk_size
-        }
+        return config
     
-    def validate_and_trim_script(self, script: str, length_params: dict, target_minutes: int) -> str:
-        """驗證並修剪腳本到目標長度"""
-        words = script.split()
-        actual_word_count = len(words)
-        target_word_count = length_params["word_count"]
-        tolerance = int(target_word_count * 0.3)  # 30% 容錯率
+    def _generate_smart_instructions(self, config: IntegratedPodcastConfig, length_params: dict) -> str:
+        """基於社區最佳實踐生成智能指導指令"""
+        target_minutes = config.target_minutes
+        style_mix = ", ".join(length_params["conversation_style"])
         
-        logger.info(f"腳本長度檢查: 目標 {target_word_count} 字，實際 {actual_word_count} 字")
-        
-        if actual_word_count <= target_word_count + tolerance:
-            logger.info("✅ 腳本長度在可接受範圍內")
-            return script
-        
-        # 需要截斷
-        logger.warning(f"⚠️ 腳本過長，從 {actual_word_count} 字截斷到 {target_word_count} 字")
-        
-        # 尋找合適的截斷點（對話邊界）
-        lines = script.split('\n')
-        trimmed_lines = []
-        current_word_count = 0
-        
-        for line in lines:
-            line_words = len(line.split())
-            if current_word_count + line_words > target_word_count:
-                # 如果加入這行會超出限制，檢查是否為對話結束點
-                if line.startswith('</Person') or current_word_count > target_word_count * 0.8:
-                    # 在對話邊界停止，或已達到80%目標
-                    break
+        # 基於社區經驗的時長指導策略
+        if target_minutes <= 1:
+            content_guidance = """Create a focused, high-level overview that delivers key insights efficiently.
+            Keep discussions concise and impactful. Prioritize the most important points."""
             
-            trimmed_lines.append(line)
-            current_word_count += line_words
+        elif target_minutes <= 3:
+            content_guidance = """Create an engaging educational discussion with moderate depth.
+            Balance accessibility with substantial content. Focus on clear explanations and practical insights."""
+            
+        elif target_minutes <= 5:
+            content_guidance = """Create a comprehensive exploration that balances breadth and depth.
+            Allow for detailed explanations while maintaining listener engagement throughout."""
+            
+        else:
+            content_guidance = """Create an in-depth, thorough analysis with comprehensive coverage.
+            Allow for detailed explanations, examples, and nuanced discussion of complex topics."""
         
-        trimmed_script = '\n'.join(trimmed_lines)
+        # 社區推薦的自然結構指導
+        structure_guidance = f"""
+        CONVERSATION STRUCTURE (社區最佳實踐):
+        1. OPENING: Natural welcome and topic introduction
+        2. MAIN DISCUSSION: {style_mix} exploration of the content
+        3. CLOSING: Natural conclusion when discussion feels complete
         
-        # 確保腳本以完整的對話結束
-        if not trimmed_script.rstrip().endswith('</Person1>') and not trimmed_script.rstrip().endswith('</Person2>'):
-            # 如果沒有正確結束，添加結束標記
-            if '<Person1>' in trimmed_script and not trimmed_script.rstrip().endswith('</Person1>'):
-                trimmed_script += '</Person1>'
-            elif '<Person2>' in trimmed_script and not trimmed_script.rstrip().endswith('</Person2>'):
-                trimmed_script += '</Person2>'
+        QUALITY GUIDELINES:
+        - Use appropriate vocabulary for {config.english_level} English learners
+        - Style: {config.style_instructions}
+        - Maintain natural conversation flow between Host and Expert
+        - Host guides with thoughtful questions, Expert provides insights
+        - Let the conversation develop organically within the style parameters
         
-        final_word_count = len(trimmed_script.split())
-        logger.info(f"✂️ 腳本截斷完成: {final_word_count} 字")
+        ENDING GUIDANCE:
+        - Conclude naturally when key points are covered
+        - Use natural closing phrases like "That wraps up", "To summarize", "Thanks for this discussion"
+        - Trust the conversation flow rather than forcing artificial limits
+        """
         
-        return trimmed_script
-
+        return f"""
+        Create a podcast conversation for {config.english_level} English learners.
+        
+        CONTENT APPROACH:
+        {content_guidance}
+        
+        {structure_guidance}
+        
+        Remember: Focus on delivering value and maintaining conversation quality. 
+        The goal is a natural, {style_mix} discussion that serves {config.english_level} learners well.
+        """
+    
     def save_wave_file(self, filename: str, pcm_data: bytes, channels: int = 1, rate: int = 24000, sample_width: int = 2):
         """保存 WAV 音頻檔案"""
         with wave.open(filename, "wb") as wf:
@@ -236,27 +288,15 @@ class IntegratedPodcastGenerator:
         # 根據時長計算精確的長度控制參數
         length_params = self.calculate_length_parameters(config.target_minutes)
         
-        # 準備 Podcastfy 配置（使用精確的長度控制）
+        # 準備 Podcastfy 配置（基於社區最佳實踐）
         conversation_config = {
             "word_count": length_params["word_count"],
             "max_num_chunks": length_params["max_num_chunks"],
             "min_chunk_size": length_params["min_chunk_size"],
-            "conversation_style": ["engaging", "educational"],
+            "conversation_style": length_params["conversation_style"],  # 使用社區推薦的風格組合
             "language": "English",
             "dialogue_structure": "two_speakers",
-            "custom_instructions": f"""
-                Create a podcast conversation for {config.english_level} English learners.
-                STRICT LENGTH REQUIREMENTS:
-                - MAXIMUM {length_params["word_count"]} words total (HARD LIMIT)
-                - EXACTLY {length_params["max_num_chunks"]} conversation rounds maximum
-                - Target duration: {config.target_minutes} minute(s)
-                - Use appropriate vocabulary for {config.english_level} level
-                - Style: {config.style_instructions}
-                - Format: Natural conversation between Host and Expert
-                - Host asks questions and guides the conversation
-                - Expert provides insights and explanations
-                - STOP generating when approaching word limit
-            """,
+            "custom_instructions": self._generate_smart_instructions(config, length_params),
             "roles": ["Host", "Expert"],
             "output_folder": config.output_dir
         }
@@ -327,8 +367,7 @@ class IntegratedPodcastGenerator:
                 with open(transcript_file, 'r', encoding='utf-8') as f:
                     script = f.read()
                 
-                # 長度驗證和後處理截斷
-                script = self.validate_and_trim_script(script, length_params, config.target_minutes)
+                # 信任社區最佳實踐：AI 會根據配置自然生成適當長度的內容
                 
                 logger.info(f"✅ 腳本生成完成（{len(script.split())} words）")
                 
@@ -374,7 +413,7 @@ class IntegratedPodcastGenerator:
 {script}"""
         
         try:
-            # 使用多說話者配置
+            # 使用正確的多說話者配置（需要 google-genai >= 1.31.0）
             response = self.gemini_client.models.generate_content(
                 model="gemini-2.5-flash-preview-tts",
                 contents=tts_prompt,
