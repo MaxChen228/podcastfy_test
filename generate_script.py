@@ -76,7 +76,7 @@ def generate_script_only(config_path: str = "./podcast_config.yaml"):
     """只生成腳本，不生成音頻"""
     
     print("=" * 60)
-    print("📝 Step 1: Podcastfy 腳本生成")
+    print("📝 自然對話播客腳本生成")
     print("=" * 60)
     
     # 載入配置
@@ -86,8 +86,11 @@ def generate_script_only(config_path: str = "./podcast_config.yaml"):
     sources, input_type = parse_input_sources(config)
     english_level = config['basic']['english_level']
     podcast_length = config['basic']['podcast_length']
-    style_instructions = config['basic']['style_instructions']
     llm_model = config['advanced']['llm_model']
+    
+    # 獲取等級和長度配置
+    level_config = config['level_configs'][english_level]
+    length_config = config['length_configs'][podcast_length]
     
     print(f"📥 輸入模式: {input_type}")
     if input_type == 'multi':
@@ -98,182 +101,33 @@ def generate_script_only(config_path: str = "./podcast_config.yaml"):
     else:
         print(f"📥 輸入來源: {sources[0]}")
     
-    print(f"🎯 英語等級: {english_level}")
-    print(f"📏 播客長度: {podcast_length}")
+    print(f"🎯 對話等級: {english_level} ({level_config['style_name']})")
+    print(f"📏 播客長度: {podcast_length} ({length_config['time_range']})")
     print(f"🤖 LLM 模型: {llm_model}")
+    print(f"🎭 對話風格: {', '.join(level_config['conversation_style'])}")
     print("-" * 60)
     
-    # 檢查是否有手動覆蓋的長度控制參數
-    if 'word_count' in config['advanced'] and config['advanced']['word_count']:
-        # 使用手動配置的參數
-        word_count = config['advanced']['word_count']
-        max_num_chunks = config['advanced'].get('max_num_chunks', 6)
-        min_chunk_size = config['advanced'].get('min_chunk_size', 600)
-        print("📌 使用手動配置的長度控制參數")
-    else:
-        # 四種播客長度模式配置
-        podcast_modes = {
-            "short": {
-                "word_count": 950,
-                "max_num_chunks": 5,
-                "min_chunk_size": 650,
-                "time_range": "3-5 分鐘",
-                "prompt_strategy": """CONCISE and FOCUSED approach:
-                - Brief introduction (15-20 seconds)
-                - Cover 3-4 key points with clear explanations
-                - Use one vivid example or case study
-                - Keep dialogue snappy and engaging
-                - End with clear takeaways
-                Think: "TED-Ed style" - educational, focused, memorable"""
-            },
-            "medium": {
-                "word_count": 2000,
-                "max_num_chunks": 8,
-                "min_chunk_size": 700,
-                "time_range": "6-10 分鐘",
-                "prompt_strategy": """BALANCED and THOROUGH approach:
-                - Proper introduction with context (30 seconds)
-                - Develop 4-5 main points with supporting examples
-                - Include 2-3 interesting anecdotes or case studies
-                - Natural conversational flow with some depth
-                - Address common questions or misconceptions
-                - Conclude with actionable insights and summary
-                Think: "Podcast episode" - comprehensive yet accessible"""
-            },
-            "long": {
-                "word_count": 3300,
-                "max_num_chunks": 12,
-                "min_chunk_size": 800,
-                "time_range": "11-15 分鐘",
-                "prompt_strategy": """IN-DEPTH and ANALYTICAL approach:
-                - Comprehensive introduction with full background
-                - Explore topic from multiple perspectives
-                - Include detailed examples, data, and evidence
-                - Address counterarguments and edge cases
-                - Build complex arguments with logical progression
-                - Allow for nuanced discussion and reflection
-                - Thorough conclusion with future implications
-                Think: "Documentary deep-dive" - rigorous, multi-faceted, insightful"""
-            },
-            "extra-long": {
-                "word_count": 7500,
-                "max_num_chunks": 20,
-                "min_chunk_size": 1000,
-                "time_range": "16-45 分鐘",
-                "prompt_strategy": """COMPREHENSIVE DOCUMENTARY approach:
-                - Extended introduction with historical context
-                - Systematic exploration of all major aspects
-                - Multiple detailed case studies and real-world applications
-                - Expert perspectives and diverse viewpoints
-                - Deep analysis of implications and consequences
-                - Address complexities, paradoxes, and open questions
-                - Thoughtful pacing with natural topic transitions
-                - Comprehensive wrap-up with call-to-action
-                Think: "Full podcast episode" - exhaustive, authoritative, thought-provoking"""
-            }
-        }
-        
-        # 使用選擇的模式
-        if podcast_length not in podcast_modes:
-            print(f"⚠️ 未知的長度模式 '{podcast_length}'，使用預設 'medium'")
-            podcast_length = "medium"
-        
-        mode = podcast_modes[podcast_length]
-        word_count = mode["word_count"]
-        max_num_chunks = mode["max_num_chunks"]
-        min_chunk_size = mode["min_chunk_size"]
-        prompt_strategy = mode["prompt_strategy"]
-        
-        print(f"📌 使用 '{podcast_length}' 模式（{mode['time_range']}）")
+    # 使用統一配置的長度和等級設定
+    word_count = length_config['word_count']
+    max_num_chunks = length_config['max_num_chunks']
+    min_chunk_size = length_config['min_chunk_size']
     
-    # 從配置文件讀取進階設定
-    conversation_style = config['advanced'].get('conversation_style', ["engaging", "educational"])
+    print(f"📌 {length_config['approach']}（{length_config['time_range']}）")
+    
+    # 從等級配置讀取對話設定
+    conversation_style = level_config['conversation_style']
     language = config['advanced'].get('language', "English")
     dialogue_structure = config['advanced'].get('dialogue_structure', "two_speakers")
     
-    # 英語等級特定的教學策略
-    level_strategies = {
-        "A1": {
-            "vocabulary": "Use only basic, high-frequency words (top 1000 most common)",
-            "grammar": "Simple present/past tense, basic sentence structures (S+V+O)",
-            "techniques": """
-            - Define EVERY new concept immediately after introducing it
-            - Repeat key information 3-4 times using different words
-            - Use analogies with everyday objects (like 'computer is like a brain')
-            - Break complex ideas into 3-4 simple steps
-            - Person1 asks clarifying questions like 'What does that mean?'
-            - Person2 explains with examples from daily life
-            - Include pauses for comprehension (use phrases like 'Let's think about this...')
-            - Knowledge density: 1 new concept per 2-3 minutes""",
-            "creativity": 0.3
-        },
-        "A2": {
-            "vocabulary": "Common words plus some topic-specific terms (top 2000 words)",
-            "grammar": "Present continuous, simple future, basic conjunctions",
-            "techniques": """
-            - Explain new concepts with 'In other words...' or 'This means that...'
-            - Repeat important points 2-3 times with variations
-            - Use concrete examples before abstract concepts
-            - Person1 summarizes what Person2 said to confirm understanding
-            - Include phrases like 'Let me explain this differently...'
-            - Compare new ideas to familiar concepts
-            - Knowledge density: 1 new concept per 1-2 minutes""",
-            "creativity": 0.4
-        },
-        "B1": {
-            "vocabulary": "Wider range including some abstract terms (top 3500 words)",
-            "grammar": "All basic tenses, conditional sentences, relative clauses",
-            "techniques": """
-            - Explain complex concepts once, then provide one example
-            - Repeat only the most critical points
-            - Mix concrete and abstract explanations
-            - Person1 and Person2 build on each other's ideas
-            - Include some technical vocabulary with brief explanations
-            - Knowledge density: 1-2 new concepts per minute""",
-            "creativity": 0.5
-        },
-        "B2": {
-            "vocabulary": "Rich vocabulary including idiomatic expressions",
-            "grammar": "Complex structures, passive voice, reported speech",
-            "techniques": """
-            - Introduce concepts with minimal repetition
-            - Use professional terminology with context clues
-            - Discuss implications and connections between ideas
-            - Natural conversational flow with interruptions and elaborations
-            - Knowledge density: 2-3 new concepts per minute""",
-            "creativity": 0.6
-        },
-        "C1": {
-            "vocabulary": "Sophisticated vocabulary, technical terms, nuanced expressions",
-            "grammar": "Full range of complex structures, subjunctive mood",
-            "techniques": """
-            - Rapid introduction of complex concepts
-            - Assume background knowledge, minimal explanations
-            - Discuss abstract theories and hypotheticals
-            - Use academic discourse markers
-            - Knowledge density: 3-4 new concepts per minute""",
-            "creativity": 0.7
-        },
-        "C2": {
-            "vocabulary": "Native-level vocabulary, specialized jargon, cultural references",
-            "grammar": "Native-like flexibility and complexity",
-            "techniques": """
-            - Dense information delivery
-            - Implicit connections between concepts
-            - Sophisticated humor and wordplay
-            - Multiple layers of meaning
-            - Knowledge density: 4+ new concepts per minute""",
-            "creativity": 0.8
-        }
-    }
+    # 檢查等級配置是否存在
+    if english_level not in config['level_configs']:
+        print(f"⚠️ 未知的等級 '{english_level}'，使用預設 'B1'")
+        english_level = "B1"
+        level_config = config['level_configs']['B1']
     
-    # 獲取對應等級的策略
-    level_strategy = level_strategies.get(english_level, level_strategies["B1"])
+    print(f"🎯 對話模式: {level_config['style_name']} - {level_config['knowledge_density']} 知識密度")
     
-    # 從配置讀取 Podcastfy 進階設定（如果存在）
-    podcastfy_config = config.get('podcastfy', {})
-    
-    # Podcastfy 完整配置（整合所有進階功能）
+    # Podcastfy 配置（使用統一的等級和長度設定）
     conversation_config = {
         # 基本參數
         "word_count": word_count,
@@ -282,61 +136,55 @@ def generate_script_only(config_path: str = "./podcast_config.yaml"):
         "language": language,
         "output_folder": "./output",
         
-        # 品牌化設定
-        "podcast_name": podcastfy_config.get('podcast_name', 'AI Learning Podcast'),
-        "podcast_tagline": podcastfy_config.get('podcast_tagline', 'Your Personal Learning Companion'),
-        "output_language": podcastfy_config.get('output_language', 'English'),
+        # 品牌化（根據等級動態生成）
+        "podcast_name": f"Natural Conversations - {level_config['style_name']}",
+        "podcast_tagline": "Where curiosity meets understanding through natural dialogue",
+        "output_language": "English",
         
-        # 對話風格（支援陣列格式）
-        "conversation_style": podcastfy_config.get('conversation_style', conversation_style),
+        # 對話風格（來自等級配置）
+        "conversation_style": conversation_style,
         
-        # 說話者角色（更具體的角色定義）
-        "roles_person1": podcastfy_config.get('roles_person1', f"{english_level} Learning Host"),
-        "roles_person2": podcastfy_config.get('roles_person2', "Subject Matter Expert"),
+        # 說話者角色（去除教學色彩）
+        "roles_person1": "Curious Discussant",
+        "roles_person2": "Thoughtful Contributor",
         
-        # 對話結構（自定義播客流程）
-        "dialogue_structure": podcastfy_config.get('dialogue_structure', [
-            "Welcome & Topic Introduction",
-            "Key Concepts Overview", 
-            "Detailed Explanation",
-            "Real-World Examples",
-            "Learning Summary"
-        ]),
+        # 對話結構（來自等級配置）
+        "dialogue_structure": level_config['dialogue_structure'],
         
-        # 參與技巧（提升吸引力）
-        "engagement_techniques": podcastfy_config.get('engagement_techniques', [
-            "rhetorical questions",
-            "analogies", 
-            "real-world examples",
-            "step-by-step explanations"
-        ]),
+        # 參與技巧（來自等級配置）
+        "engagement_techniques": level_config['techniques'],
         
-        # 創造力控制（根據等級調整）
-        "creativity": podcastfy_config.get('creativity', level_strategy["creativity"]),
+        # 創造力控制（來自等級配置）
+        "creativity": level_config['creativity'],
         
-        # 自定義指令（整合等級策略和用戶指令）
+        # 自然對話指令（根據等級自動生成）
         "custom_instructions": f"""
-        {podcastfy_config.get('user_instructions', '')}
+        Create a natural conversation between two genuinely curious people exploring this topic.
         
-        Create an educational podcast for {english_level} English learners.
+        CONVERSATION LEVEL: {english_level} ({level_config['style_name']})
+        KNOWLEDGE DENSITY: {level_config['knowledge_density']}
+        PACE: {level_config['pace']}
+        INTERACTION: {level_config['interaction_level']} interaction
         
-        LANGUAGE REQUIREMENTS:
-        - Vocabulary: {level_strategy['vocabulary']}
-        - Grammar: {level_strategy['grammar']}
+        NATURAL CONVERSATION MARKERS:
+        {chr(10).join('- "' + marker + '"' for marker in level_config['conversation_markers'])}
         
-        PEDAGOGICAL TECHNIQUES:
-        {level_strategy['techniques']}
+        CONVERSATION PRINCIPLES:
+        1. Both speakers are genuinely curious and engaged
+        2. Knowledge emerges through natural discussion, not teaching
+        3. Use authentic reactions and organic idea building
+        4. Maintain {level_config['pace']} pace with {level_config['interaction_level']} interaction
+        5. Apply {level_config['knowledge_density']} knowledge density naturally
         
-        PODCAST SPECIFICATIONS:
-        - Length: {podcast_length} ({mode['time_range']})
-        - Style: {style_instructions}
-        - Host Role: {podcastfy_config.get('roles_person1', f'{english_level} Learning Host')}
-        - Expert Role: {podcastfy_config.get('roles_person2', 'Subject Matter Expert')}
+        ENGAGEMENT TECHNIQUES:
+        {', '.join(level_config['techniques'])}
         
-        CONTENT STRATEGY:
-        {prompt_strategy}
+        AVOID: Teaching language, structured lessons, "let me explain" phrases
+        EMBRACE: Genuine curiosity, collaborative exploration, natural discovery
         
-        IMPORTANT: Adapt your language complexity, explanation depth, and repetition frequency strictly according to the {english_level} level requirements above.""",
+        TARGET: {length_config['time_range']} of natural, engaging conversation
+        APPROACH: {length_config['approach']}
+        """,
         
         # 保持向後相容
         "roles": ["Host", "Expert"]
@@ -437,51 +285,51 @@ def generate_script_only(config_path: str = "./podcast_config.yaml"):
             
             # 生成腳本（transcript_only=True 表示只生成腳本）
             if input_type == 'text':
-            if Path(input_source).exists():
-                with open(input_source, 'r', encoding='utf-8') as f:
-                    content = f.read()
+                if Path(input_source).exists():
+                    with open(input_source, 'r', encoding='utf-8') as f:
+                        content = f.read()
+                else:
+                    content = input_source
+                
+                result = generate_podcast(
+                    text=content,
+                    llm_model_name=llm_model,
+                    api_key_label="GEMINI_API_KEY",
+                    conversation_config=conversation_config,
+                    transcript_only=True  # 只生成腳本
+                )
+            
+            elif input_type == 'url':
+                result = generate_podcast(
+                    urls=[input_source],
+                    llm_model_name=llm_model,
+                    api_key_label="GEMINI_API_KEY",
+                    conversation_config=conversation_config,
+                    transcript_only=True
+                )
+                
+            elif input_type == 'youtube':
+                result = generate_podcast(
+                    youtube_urls=[input_source],
+                    llm_model_name=llm_model,
+                    api_key_label="GEMINI_API_KEY",
+                    conversation_config=conversation_config,
+                    transcript_only=True
+                )
+                
+            elif input_type == 'pdf':
+                result = generate_podcast(
+                    pdf_file_path=input_source,
+                    llm_model_name=llm_model,
+                    api_key_label="GEMINI_API_KEY",
+                    conversation_config=conversation_config,
+                    transcript_only=True
+                )
             else:
-                content = input_source
-            
-            result = generate_podcast(
-                text=content,
-                llm_model_name=llm_model,
-                api_key_label="GEMINI_API_KEY",
-                conversation_config=conversation_config,
-                transcript_only=True  # 只生成腳本
-            )
-            
-        elif input_type == 'url':
-            result = generate_podcast(
-                urls=[input_source],
-                llm_model_name=llm_model,
-                api_key_label="GEMINI_API_KEY",
-                conversation_config=conversation_config,
-                transcript_only=True
-            )
-            
-        elif input_type == 'youtube':
-            result = generate_podcast(
-                youtube_urls=[input_source],
-                llm_model_name=llm_model,
-                api_key_label="GEMINI_API_KEY",
-                conversation_config=conversation_config,
-                transcript_only=True
-            )
-            
-        elif input_type == 'pdf':
-            result = generate_podcast(
-                pdf_file_path=input_source,
-                llm_model_name=llm_model,
-                api_key_label="GEMINI_API_KEY",
-                conversation_config=conversation_config,
-                transcript_only=True
-            )
-        else:
-            raise ValueError(f"不支援的輸入類型: {input_type}")
+                raise ValueError(f"不支援的輸入類型: {input_type}")
         
-        # 查找生成的腳本檔案
-        transcript_dir = Path("./output/transcripts/")
+        # 查找生成的腳本檔案（修正路徑）
+        transcript_dir = Path("./data/transcripts/")
         transcript_files = sorted(transcript_dir.glob("transcript*.txt"), 
                                 key=lambda x: x.stat().st_mtime, reverse=True)
         
@@ -510,7 +358,7 @@ def generate_script_only(config_path: str = "./podcast_config.yaml"):
                 "input_type": input_type,
                 "english_level": english_level,
                 "podcast_length": podcast_length,
-                "time_range": mode['time_range'],
+                "time_range": length_config['time_range'],
                 "target_words": word_count,
                 "actual_words": word_count_actual,
                 "accuracy": f"{(word_count_actual/word_count*100):.1f}%",

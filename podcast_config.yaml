@@ -1,265 +1,259 @@
 # ╔══════════════════════════════════════════════════════════════════════════╗
-# ║                        播客生成配置文件 - Podcast Config                      ║
-# ║                     使用 Podcastfy + Gemini Multi-Speaker TTS               ║
+# ║                    統一播客配置 - Unified Podcast Config                    ║
+# ║              只需選擇等級和長度，自動配置自然對話風格                           ║
 # ╚══════════════════════════════════════════════════════════════════════════╝
 
 # ┌─────────────────────────────────────────────────────────────────────────┐
-# │                            基本設定 (Basic Settings)                      │
+# │                        用戶選擇 (User Selection)                           │
 # └─────────────────────────────────────────────────────────────────────────┘
 basic:
-  # 英語等級設定
-  # - A1/A2: 初級（簡單詞彙、基礎句型）
-  # - B1/B2: 中級（日常話題、複雜語法）  
-  # - C1/C2: 高級（專業內容、母語水準）
-  english_level: "A2"
+  # 英語等級（唯一的風格選擇器）
+  # A1: 探索者 - 緩慢共同發現，大量背景
+  # A2: 好奇者 - 耐心建立理解，熟悉例子
+  # B1: 討論者 - 平衡探索，混合複雜度
+  # B2: 分析者 - 深入對話，專業詞彙
+  # C1: 智者 - 快速洞察，直接核心
+  # C2: 大師 - 專精論述，複雜關聯
+  english_level: "B1"
   
-  # 播客長度模式（四種選項）
-  # - short:      3-5 分鐘（快速導覽）
-  # - medium:     6-10 分鐘（標準探討）
-  # - long:       11-15 分鐘（深度分析）
-  # - extra-long: 16-45 分鐘（完整專題）
+  # 播客長度
+  # short: 3-5分鐘, medium: 6-10分鐘, long: 11-15分鐘, extra-long: 16-45分鐘
   podcast_length: "short"
-  
-  # 對話風格指令（可自訂多個關鍵詞，用逗號分隔）
-  style_instructions: "conversational, engaging, educational"
 
 # ┌─────────────────────────────────────────────────────────────────────────┐
-# │                            輸入來源 (Input Source)                        │
+# │                            輸入來源 (Input Sources)                        │
 # └─────────────────────────────────────────────────────────────────────────┘
 input:
-  # 🚀 【新功能】多資料來源支援
-  # 使用 sources 陣列可以同時處理多個來源，生成整合性播客
+  # 多資料來源支援
   sources:
     - "https://tw.news.yahoo.com/麥克風沒關-川普曝蒲亭-為了我-達成協議-021649771.html"
-    # - "https://youtube.com/watch?v=VIDEO_ID"      # YouTube 影片
-    # - "./research_paper.pdf"                      # 本地 PDF 文檔
-    # - "./article.txt"                             # 本地文字檔案
-    # - "這是直接輸入的文字內容，也會被整合到播客中..."   # 直接文字
-  
-  # 📌 向後相容：單一來源模式（當 type != "multi" 時使用）
-  source: "https://tw.news.yahoo.com/麥克風沒關-川普曝蒲亭-為了我-達成協議-021649771.html"
-  
-  # 輸入類型選項：
-  # - multi: 使用 sources 陣列處理多個來源
-  # - auto:  單一來源自動檢測類型
-  # - text, pdf, url, youtube: 單一來源手動指定類型
+    # - "https://youtube.com/watch?v=VIDEO_ID"
+    # - "./research.pdf"
+    # - "./article.txt"
+    # - "直接輸入的文字內容..."
   type: "multi"
 
 # ┌─────────────────────────────────────────────────────────────────────────┐
-# │                         語音設定 (Voice Configuration)                     │
+# │                      等級自動配置 (Level Auto-Configuration)                │
 # └─────────────────────────────────────────────────────────────────────────┘
-voices:
-  # Gemini Multi-Speaker TTS 提供的聲線選項：
-  # 
-  # 【女聲】
-  # - Kore:  溫和親切，適合主持人角色
-  # - Aoede: 優雅文藝，適合文化話題
-  # 
-  # 【男聲】  
-  # - Puck:   活潑年輕，適合專家解說
-  # - Charon: 沈穩權威，適合嚴肅話題
-  # - Fenrir: 專業清晰，適合技術內容
-  
-  # 主持人聲線 (Person1)
-  host_voice: "Kore"
-  
-  # 專家聲線 (Person2)
-  expert_voice: "Aoede"
-  
-  # 💡 推薦聲線搭配：
-  # - Kore + Puck:   女主持 + 男專家（活潑對話）
-  # - Aoede + Charon: 女專家 + 男主持（深度討論）
-  # - Fenrir + Aoede: 男專業 + 女優雅（技術解說）
+# 🤖 系統會根據選擇的 english_level 自動應用以下配置
+level_configs:
+  A1:  # 探索者 - 緩慢共同發現
+    style_name: "探索者"
+    conversation_style: ["gentle", "wondering", "patient", "supportive", "exploratory"]
+    voices: { host_voice: "Kore", expert_voice: "Puck" }  # 溫和女+活潑男
+    pace: "slow"
+    knowledge_density: "very_low"
+    interaction_level: "high"
+    creativity: 0.3
+    techniques: ["simple analogies", "concrete examples", "gentle questioning", "patient exploration", "encouraging discoveries"]
+    dialogue_structure: [
+      "Friendly Hello & What We're Curious About",
+      "First Look & Simple Impressions", 
+      "Understanding Step by Step",
+      "Connecting to What We Know",
+      "Discovering Together",
+      "What We Learned Today"
+    ]
+    conversation_markers: [
+      "Hmm, I wonder what this means...",
+      "Oh, that's like when...",
+      "Wait, can you help me understand...",
+      "That makes me think of..."
+    ]
+    
+  A2:  # 好奇者 - 耐心建立理解
+    style_name: "好奇者"
+    conversation_style: ["curious", "patient", "supportive", "encouraging", "friendly"]
+    voices: { host_voice: "Kore", expert_voice: "Charon" }  # 溫和女+沈穩男
+    pace: "slow"
+    knowledge_density: "low"
+    interaction_level: "high"
+    creativity: 0.4
+    techniques: ["relatable examples", "step-by-step thinking", "familiar analogies", "clarifying questions", "building understanding slowly"]
+    dialogue_structure: [
+      "Warm Welcome & Topic Introduction",
+      "First Thoughts & Initial Questions",
+      "Building Understanding Together", 
+      "Real-World Connections",
+      "Putting Pieces Together",
+      "Reflecting on Our Journey"
+    ]
+    conversation_markers: [
+      "I'm starting to see...",
+      "That reminds me of...",
+      "So if I understand correctly...",
+      "Oh, that helps me picture it!"
+    ]
+    
+  B1:  # 討論者 - 平衡探索
+    style_name: "討論者"
+    conversation_style: ["thoughtful", "balanced", "conversational", "analytical", "engaging"]
+    voices: { host_voice: "Aoede", expert_voice: "Puck" }  # 優雅女+活潑男
+    pace: "moderate"
+    knowledge_density: "medium"
+    interaction_level: "medium"
+    creativity: 0.5
+    techniques: ["mixed complexity examples", "comparative thinking", "moderate abstractions", "exploratory questions", "balanced analysis"]
+    dialogue_structure: [
+      "Natural Opening & Topic Setting",
+      "Initial Analysis & Key Points",
+      "Deeper Exploration & Examples",
+      "Different Angles & Perspectives", 
+      "Broader Implications",
+      "Personal Insights & Takeaways"
+    ]
+    conversation_markers: [
+      "What's interesting here is...",
+      "I think there are different ways to look at this...",
+      "Building on what you said...",
+      "That raises an interesting point..."
+    ]
+    
+  B2:  # 分析者 - 深入對話
+    style_name: "分析者"
+    conversation_style: ["analytical", "sophisticated", "insightful", "professional", "articulate"]
+    voices: { host_voice: "Aoede", expert_voice: "Fenrir" }  # 優雅女+專業男
+    pace: "moderate-fast"
+    knowledge_density: "medium-high"
+    interaction_level: "medium"
+    creativity: 0.6
+    techniques: ["nuanced examples", "analytical thinking", "abstract concepts", "probing questions", "strategic connections"]
+    dialogue_structure: [
+      "Opening Analysis & Core Focus",
+      "Key Insights & Critical Points",
+      "Nuanced Perspectives & Complexity",
+      "Strategic Implications & Connections",
+      "Advanced Analysis & Synthesis",
+      "Forward-Looking Reflections"
+    ]
+    conversation_markers: [
+      "The really interesting aspect here is...",
+      "What this suggests to me is...",
+      "There's a deeper pattern here...",
+      "The implications extend to..."
+    ]
+    
+  C1:  # 智者 - 快速洞察
+    style_name: "智者"
+    conversation_style: ["sharp", "analytical", "sophisticated", "direct", "insightful"]
+    voices: { host_voice: "Aoede", expert_voice: "Fenrir" }  # 優雅女+專業男
+    pace: "fast"
+    knowledge_density: "high"
+    interaction_level: "low"
+    creativity: 0.7
+    techniques: ["sharp analysis", "sophisticated connections", "implicit assumptions", "strategic implications", "systemic thinking"]
+    dialogue_structure: [
+      "Immediate Context & Core Issues",
+      "Critical Analysis & Key Insights", 
+      "Deeper Implications & Connections",
+      "Nuanced Perspectives & Complications",
+      "Strategic Synthesis & Future Outlook"
+    ]
+    conversation_markers: [
+      "The real question here is...",
+      "What's particularly significant is...",
+      "This connects to the broader...",
+      "The strategic implication is..."
+    ]
+    
+  C2:  # 大師 - 專精論述
+    style_name: "大師"
+    conversation_style: ["expert", "sophisticated", "nuanced", "authoritative", "complex"]
+    voices: { host_voice: "Aoede", expert_voice: "Fenrir" }  # 優雅女+專業男
+    pace: "fast"
+    knowledge_density: "very_high"
+    interaction_level: "very_low"
+    creativity: 0.8
+    techniques: ["expert discourse", "subtle implications", "technical precision", "complex interdependencies", "multi-layered analysis"]
+    dialogue_structure: [
+      "Expert Opening & Immediate Analysis",
+      "Deep Technical & Conceptual Exploration",
+      "Multi-Dimensional Implications & Effects", 
+      "Sophisticated Synthesis & Integration",
+      "Advanced Future Projections & Conclusions"
+    ]
+    conversation_markers: [
+      "The fundamental dynamics at play...",
+      "What's particularly sophisticated about this...",
+      "The multi-layered implications...",
+      "From a systemic perspective..."
+    ]
 
 # ┌─────────────────────────────────────────────────────────────────────────┐
-# │                          進階設定 (Advanced Settings)                      │
+# │                    長度自動配置 (Length Auto-Configuration)                 │
+# └─────────────────────────────────────────────────────────────────────────┘
+length_configs:
+  short:
+    word_count: 950
+    max_num_chunks: 5
+    min_chunk_size: 650
+    time_range: "3-5 分鐘"
+    approach: "快速概覽，重點突出"
+    
+  medium:
+    word_count: 2000
+    max_num_chunks: 8
+    min_chunk_size: 700
+    time_range: "6-10 分鐘"
+    approach: "適度探討，平衡深度"
+    
+  long:
+    word_count: 3300
+    max_num_chunks: 12
+    min_chunk_size: 800
+    time_range: "11-15 分鐘"
+    approach: "深度分析，多角度探討"
+    
+  extra-long:
+    word_count: 7500
+    max_num_chunks: 20
+    min_chunk_size: 1000
+    time_range: "16-45 分鐘"
+    approach: "全面探究，專業深度"
+
+# ┌─────────────────────────────────────────────────────────────────────────┐
+# │                          技術設定 (Technical Settings)                      │
 # └─────────────────────────────────────────────────────────────────────────┘
 advanced:
-  # TTS 選項（建議保持 false，使用 Gemini Multi-Speaker TTS）
   use_podcastfy_tts: false
-  
-  # 輸出目錄路徑
   output_dir: "./output"
-  
-  # LLM 模型選擇（用於生成腳本）
-  # - gemini-2.5-flash: 快速、經濟
-  # - gemini-2.5-pro:   品質更高、成本較高
-  llm_model: "gemini-2.5-flash"
-  
-  # TTS 模型選擇（用於生成語音）
-  # - gemini-2.5-flash-preview-tts: 快速生成
-  # - gemini-2.5-pro-preview-tts:   高品質語音
-  tts_model: "gemini-2.5-flash-preview-tts"
-  
-  # 對話風格參數（Podcastfy 內部使用）
-  conversation_style: ["engaging", "educational"]
-  
-  # 語言設定
+  llm_model: "gemini-2.5-pro"
+  tts_model: "gemini-2.5-pro-preview-tts"
   language: "English"
-  
-  # 對話結構
   dialogue_structure: "two_speakers"
-  
-  # 【進階】手動覆蓋長度控制（一般不需要修改）
-  # word_count: 1000      # 手動設定目標字數
-  # max_num_chunks: 8     # 手動設定最大輪次
-  # min_chunk_size: 700   # 手動設定最小區塊大小
 
 # ┌─────────────────────────────────────────────────────────────────────────┐
-# │                      Podcastfy 進階客製化 (Advanced Customization)         │
+# │                      核心自然對話原則 (Core Natural Principles)              │
 # └─────────────────────────────────────────────────────────────────────────┘
-podcastfy:
-  # 🎙️ 播客品牌化
-  podcast_name: "Learn with AI"
-  podcast_tagline: "Making Complex Topics Simple for English Learners"
+natural_conversation_core: |
+  所有等級都遵循自然對話原則：
   
-  # 🌍 輸出語言（與 advanced.language 不同，這是最終音頻語言）
-  output_language: "English"
+  ✅ 自然對話標記：
+  - "That's fascinating because..."
+  - "What strikes me is..."
+  - "I hadn't thought of it that way..."
+  - "Building on what you said..."
+  - "That reminds me of..."
   
-  # 🎭 對話風格（可組合多個風格創造獨特體驗）
-  conversation_style: 
-    - "engaging"          # 吸引人的
-    - "educational"       # 教育性的
-    - "supportive"        # 支持性的，適合學習者
-    - "clear"             # 清晰表達
-    - "patient"           # 有耐心的解釋
+  ❌ 避免教學語言：
+  - "Let me explain..."
+  - "It's important to understand..."
+  - "The lesson here is..."
+  - "You should know that..."
   
-  # 👥 說話者角色定義（比 Person1/Person2 更具體）
-  roles_person1: "English Learning Host"     # 主持人：友善、鼓勵、會問學習者想問的問題
-  roles_person2: "Subject Matter Expert"     # 專家：知識豐富、能將複雜概念簡化
-  
-  # 📋 對話結構流程（自定義播客架構，創造一致的學習體驗）
-  dialogue_structure:
-    - "Welcome & Warm Introduction"    # 溫暖歡迎和介紹
-    - "Topic Overview & Why It Matters" # 主題概覽和重要性
-    - "Key Concepts Breakdown"         # 關鍵概念拆解
-    - "Real-World Applications"        # 實際應用場景
-    - "Common Mistakes & Tips"         # 常見錯誤和技巧
-    - "Practice Suggestions"           # 練習建議
-    - "Summary & Encouragement"        # 總結和鼓勵
-  
-  # 🎯 參與技巧（讓內容更吸引人，提升學習效果）
-  engagement_techniques:
-    - "rhetorical questions"           # 修辭性問句（"Have you ever wondered...?"）
-    - "analogies"                     # 類比說明（"Think of it like..."）
-    - "real-world examples"            # 現實例子
-    - "step-by-step explanations"     # 步驟式解釋
-    - "encouragement phrases"          # 鼓勵用語（"You're doing great!"）
-    - "repetition for emphasis"        # 強調性重複
-    - "bridging phrases"              # 連接用語（"Let me explain that differently"）
-    
-  # 🎨 創造力控制（0=嚴格事實, 1=平衡, 2=創意豐富）
-  # 學習用途建議使用適中創造力確保準確性同時保持趣味
-  creativity: 0.6
-  
-  # ✍️ 自定義指令（會覆蓋預設模板，可添加特殊要求）
-  user_instructions: |
-    Focus on making complex topics accessible to English learners.
-    Use graduated difficulty progression - start simple, build complexity.
-    Always provide context and background before introducing new concepts.
-    Include pronunciation guidance for difficult technical terms.
-    Use positive, encouraging language throughout.
-    When explaining, use the "scaffold" technique: simple explanation → example → more detail.
+  🎯 目標：真實的智識好奇心，不是結構化教育
 
 # ╔══════════════════════════════════════════════════════════════════════════╗
-# ║                              使用範例 (Examples)                           ║
+# ║                          快速使用指南 (Quick Guide)                          ║
 # ╚══════════════════════════════════════════════════════════════════════════╝
 
-# ┌─────────────────────────────────────────────────────────────────────────┐
-# │                        單一來源範例 (Single Source)                        │
-# └─────────────────────────────────────────────────────────────────────────┘
-single_source_examples:
-  text_file: "./sample_article.txt"           # 本地文字檔案
-  pdf_file: "./research_paper.pdf"            # PDF 文檔
-  web_article: "https://example.com/article"  # 網路文章
-  youtube_video: "https://youtube.com/watch?v=VIDEO_ID"  # YouTube 影片
-
-# ┌─────────────────────────────────────────────────────────────────────────┐
-# │                        多資料來源範例 (Multi Sources)                      │
-# └─────────────────────────────────────────────────────────────────────────┘
-multi_source_examples:
-  # 💡 範例 1：新聞專題播客
-  news_topic:
-    sources:
-      - "https://news.site1.com/breaking-news"
-      - "https://news.site2.com/analysis" 
-      - "https://youtube.com/watch?v=expert-interview"
-    type: "multi"
-  
-  # 💡 範例 2：學術研究播客
-  research_topic:
-    sources:
-      - "./research_paper_1.pdf"
-      - "./research_paper_2.pdf"
-      - "https://university.edu/article"
-      - "補充說明：這個研究的重要性在於..."
-    type: "multi"
-    
-  # 💡 範例 3：產品介紹播客
-  product_review:
-    sources:
-      - "https://company.com/product-page"
-      - "https://youtube.com/watch?v=demo-video"
-      - "./user_manual.pdf"
-      - "./customer_feedback.txt"
-    type: "multi"
-
-# ╔══════════════════════════════════════════════════════════════════════════╗
-# ║                              參考資訊 (Reference)                          ║
-# ╚══════════════════════════════════════════════════════════════════════════╝
-
-# ┌─────────────────────────────────────────────────────────────────────────┐
-# │                      英語等級詳細說明 (CEFR Levels)                        │
-# └─────────────────────────────────────────────────────────────────────────┘
-# A1 - 初學者：能理解並使用熟悉的日常表達和基本詞彙
-# A2 - 初級：能理解日常生活中的句子和常用語
-# B1 - 中級：能理解工作、學校、休閒等場合的要點
-# B2 - 中上級：能理解複雜文章的主要內容，包括技術討論
-# C1 - 高級：能理解長篇複雜的文章，並辨識隱含意義
-# C2 - 精通：能輕鬆理解所有聽到或讀到的內容
-
-# ┌─────────────────────────────────────────────────────────────────────────┐
-# │                   播客長度模式詳細說明 (Length Modes)                      │
-# └─────────────────────────────────────────────────────────────────────────┘
-#
-# 【SHORT】3-5 分鐘
-#   用途：快速概覽、新聞摘要、每日更新
-#   字數：700-1200 字
-#   特點：重點突出、節奏明快、資訊密集
-#
-# 【MEDIUM】6-10 分鐘  
-#   用途：主題探討、教學內容、產品介紹
-#   字數：1500-2500 字
-#   特點：深度適中、例證充分、易於消化
-#
-# 【LONG】11-15 分鐘
-#   用途：深度分析、案例研究、技術講解
-#   字數：2800-3800 字
-#   特點：全面詳盡、邏輯嚴謹、觀點多元
-#
-# 【EXTRA-LONG】16-45 分鐘
-#   用途：完整訪談、系列專題、深度紀錄
-#   字數：4000-11000 字
-#   特點：鉅細靡遺、多方觀點、深入探究
-
-# ┌─────────────────────────────────────────────────────────────────────────┐
-# │                          快速開始指南 (Quick Start)                        │
-# └─────────────────────────────────────────────────────────────────────────┘
-# 1. 設定你的 API Key：
-#    export GEMINI_API_KEY="your-api-key-here"
-#
-# 2. 選擇播客長度：
-#    修改 basic.podcast_length 為 short/medium/long/extra-long
-#
-# 3. 輸入內容來源：
-#    修改 input.source 為你的文章網址或檔案路徑
-#
-# 4. 執行生成：
-#    python podcast_workflow.py --mode prod
-#
-# 5. 查看結果：
-#    音頻檔案將保存在 output/audio/ 目錄中
+usage_guide: |
+  🚀 簡單兩步驟：
+  1. 選擇等級：修改 basic.english_level (A1/A2/B1/B2/C1/C2)
+  2. 選擇長度：修改 basic.podcast_length (short/medium/long/extra-long)
+  3. 執行：python generate_script.py
 
 # ═══════════════════════════════════════════════════════════════════════════
-# 配置文件版本：2.0 | 最後更新：2024-12 | 作者：Podcast Generator Team
+# 統一配置版本：3.0 | 最後更新：2024-12 | 自然對話優先設計
 # ═══════════════════════════════════════════════════════════════════════════

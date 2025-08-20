@@ -68,12 +68,17 @@ def generate_audio_from_script(script_dir: str):
     # 載入配置文件取得所有設定
     config = load_config()
     
-    # 基本設定
-    style_instructions = config['basic'].get('style_instructions', 'conversational, engaging')
+    # 獲取等級配置
+    english_level = config['basic']['english_level']
+    level_config = config['level_configs'][english_level]
     
-    # 聲線設定
-    host_voice = config['voices'].get('host_voice', 'Kore')
-    expert_voice = config['voices'].get('expert_voice', 'Puck')
+    # 聲線設定（從等級配置中獲取）
+    voices_config = level_config['voices']
+    host_voice = voices_config.get('host_voice', 'Kore')
+    expert_voice = voices_config.get('expert_voice', 'Puck')
+    
+    # 對話風格（從等級配置中獲取）
+    style_instructions = ', '.join(level_config['conversation_style'])
     
     # TTS 模型設定
     tts_model = config['advanced'].get('tts_model', 'gemini-2.5-flash-preview-tts')
