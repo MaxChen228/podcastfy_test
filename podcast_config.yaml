@@ -27,16 +27,23 @@ basic:
 # │                            輸入來源 (Input Source)                        │
 # └─────────────────────────────────────────────────────────────────────────┘
 input:
-  # 支援多種輸入格式：
-  # - 純文字內容：直接輸入文字
-  # - 本地文件：./path/to/file.txt 或 ./path/to/document.pdf
-  # - 網頁文章：https://example.com/article
-  # - YouTube 影片：https://youtube.com/watch?v=VIDEO_ID
+  # 🚀 【新功能】多資料來源支援
+  # 使用 sources 陣列可以同時處理多個來源，生成整合性播客
+  sources:
+    - "https://tw.news.yahoo.com/麥克風沒關-川普曝蒲亭-為了我-達成協議-021649771.html"
+    # - "https://youtube.com/watch?v=VIDEO_ID"      # YouTube 影片
+    # - "./research_paper.pdf"                      # 本地 PDF 文檔
+    # - "./article.txt"                             # 本地文字檔案
+    # - "這是直接輸入的文字內容，也會被整合到播客中..."   # 直接文字
+  
+  # 📌 向後相容：單一來源模式（當 type != "multi" 時使用）
   source: "https://tw.news.yahoo.com/麥克風沒關-川普曝蒲亭-為了我-達成協議-021649771.html"
   
-  # 輸入類型（建議使用 "auto" 自動檢測）
-  # 可選值：auto, text, pdf, url, youtube
-  type: "auto"
+  # 輸入類型選項：
+  # - multi: 使用 sources 陣列處理多個來源
+  # - auto:  單一來源自動檢測類型
+  # - text, pdf, url, youtube: 單一來源手動指定類型
+  type: "multi"
 
 # ┌─────────────────────────────────────────────────────────────────────────┐
 # │                         語音設定 (Voice Configuration)                     │
@@ -98,15 +105,104 @@ advanced:
   # max_num_chunks: 8     # 手動設定最大輪次
   # min_chunk_size: 700   # 手動設定最小區塊大小
 
+# ┌─────────────────────────────────────────────────────────────────────────┐
+# │                      Podcastfy 進階客製化 (Advanced Customization)         │
+# └─────────────────────────────────────────────────────────────────────────┘
+podcastfy:
+  # 🎙️ 播客品牌化
+  podcast_name: "Learn with AI"
+  podcast_tagline: "Making Complex Topics Simple for English Learners"
+  
+  # 🌍 輸出語言（與 advanced.language 不同，這是最終音頻語言）
+  output_language: "English"
+  
+  # 🎭 對話風格（可組合多個風格創造獨特體驗）
+  conversation_style: 
+    - "engaging"          # 吸引人的
+    - "educational"       # 教育性的
+    - "supportive"        # 支持性的，適合學習者
+    - "clear"             # 清晰表達
+    - "patient"           # 有耐心的解釋
+  
+  # 👥 說話者角色定義（比 Person1/Person2 更具體）
+  roles_person1: "English Learning Host"     # 主持人：友善、鼓勵、會問學習者想問的問題
+  roles_person2: "Subject Matter Expert"     # 專家：知識豐富、能將複雜概念簡化
+  
+  # 📋 對話結構流程（自定義播客架構，創造一致的學習體驗）
+  dialogue_structure:
+    - "Welcome & Warm Introduction"    # 溫暖歡迎和介紹
+    - "Topic Overview & Why It Matters" # 主題概覽和重要性
+    - "Key Concepts Breakdown"         # 關鍵概念拆解
+    - "Real-World Applications"        # 實際應用場景
+    - "Common Mistakes & Tips"         # 常見錯誤和技巧
+    - "Practice Suggestions"           # 練習建議
+    - "Summary & Encouragement"        # 總結和鼓勵
+  
+  # 🎯 參與技巧（讓內容更吸引人，提升學習效果）
+  engagement_techniques:
+    - "rhetorical questions"           # 修辭性問句（"Have you ever wondered...?"）
+    - "analogies"                     # 類比說明（"Think of it like..."）
+    - "real-world examples"            # 現實例子
+    - "step-by-step explanations"     # 步驟式解釋
+    - "encouragement phrases"          # 鼓勵用語（"You're doing great!"）
+    - "repetition for emphasis"        # 強調性重複
+    - "bridging phrases"              # 連接用語（"Let me explain that differently"）
+    
+  # 🎨 創造力控制（0=嚴格事實, 1=平衡, 2=創意豐富）
+  # 學習用途建議使用適中創造力確保準確性同時保持趣味
+  creativity: 0.6
+  
+  # ✍️ 自定義指令（會覆蓋預設模板，可添加特殊要求）
+  user_instructions: |
+    Focus on making complex topics accessible to English learners.
+    Use graduated difficulty progression - start simple, build complexity.
+    Always provide context and background before introducing new concepts.
+    Include pronunciation guidance for difficult technical terms.
+    Use positive, encouraging language throughout.
+    When explaining, use the "scaffold" technique: simple explanation → example → more detail.
+
 # ╔══════════════════════════════════════════════════════════════════════════╗
 # ║                              使用範例 (Examples)                           ║
 # ╚══════════════════════════════════════════════════════════════════════════╝
-examples:
-  # 各種輸入來源範例：
+
+# ┌─────────────────────────────────────────────────────────────────────────┐
+# │                        單一來源範例 (Single Source)                        │
+# └─────────────────────────────────────────────────────────────────────────┘
+single_source_examples:
   text_file: "./sample_article.txt"           # 本地文字檔案
   pdf_file: "./research_paper.pdf"            # PDF 文檔
   web_article: "https://example.com/article"  # 網路文章
   youtube_video: "https://youtube.com/watch?v=VIDEO_ID"  # YouTube 影片
+
+# ┌─────────────────────────────────────────────────────────────────────────┐
+# │                        多資料來源範例 (Multi Sources)                      │
+# └─────────────────────────────────────────────────────────────────────────┘
+multi_source_examples:
+  # 💡 範例 1：新聞專題播客
+  news_topic:
+    sources:
+      - "https://news.site1.com/breaking-news"
+      - "https://news.site2.com/analysis" 
+      - "https://youtube.com/watch?v=expert-interview"
+    type: "multi"
+  
+  # 💡 範例 2：學術研究播客
+  research_topic:
+    sources:
+      - "./research_paper_1.pdf"
+      - "./research_paper_2.pdf"
+      - "https://university.edu/article"
+      - "補充說明：這個研究的重要性在於..."
+    type: "multi"
+    
+  # 💡 範例 3：產品介紹播客
+  product_review:
+    sources:
+      - "https://company.com/product-page"
+      - "https://youtube.com/watch?v=demo-video"
+      - "./user_manual.pdf"
+      - "./customer_feedback.txt"
+    type: "multi"
 
 # ╔══════════════════════════════════════════════════════════════════════════╗
 # ║                              參考資訊 (Reference)                          ║
