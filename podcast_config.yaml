@@ -18,7 +18,7 @@ basic:
   
   # 播客長度
   # short: 3-5分鐘, medium: 6-10分鐘, long: 11-15分鐘, extra-long: 16-45分鐘
-  podcast_length: "short"
+  podcast_length: "medium"
 
 # ┌─────────────────────────────────────────────────────────────────────────┐
 # │                            輸入來源 (Input Sources)                        │
@@ -26,11 +26,10 @@ basic:
 input:
   # 多資料來源支援
   sources:
-    - "https://tw.news.yahoo.com/麥克風沒關-川普曝蒲亭-為了我-達成協議-021649771.html"
-    # - "https://youtube.com/watch?v=VIDEO_ID"
-    # - "./research.pdf"
-    # - "./article.txt"
-    # - "直接輸入的文字內容..."
+    - "https://medium.com/write-a-catalyst/you-are-fired-now-80458d77205a"
+    - "https://medium.com/@huonglanchu/managing-technical-debt-in-the-age-of-vibe-coding-1ceafd97b0a2"
+    - "https://medium.com/entrepreneur-s-handbook/lets-talk-about-what-vibe-coding-is-really-for-984bd7d19497"
+    - "https://medium.com/entrepreneur-s-handbook/should-you-be-vibe-coding-c56b5f0708a1"
   type: "multi"
 
 # ┌─────────────────────────────────────────────────────────────────────────┐
@@ -218,8 +217,8 @@ length_configs:
 advanced:
   use_podcastfy_tts: false
   output_dir: "./output"
-  llm_model: "gemini-2.5-pro"
-  tts_model: "gemini-2.5-pro-preview-tts"
+  llm_model: "gemini-2.5-flash"
+  tts_model: "gemini-2.5-flash-preview-tts"
   language: "English"
   dialogue_structure: "two_speakers"
 

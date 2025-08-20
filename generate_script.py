@@ -144,9 +144,9 @@ def generate_script_only(config_path: str = "./podcast_config.yaml"):
         # 對話風格（來自等級配置）
         "conversation_style": conversation_style,
         
-        # 說話者角色（去除教學色彩）
-        "roles_person1": "Curious Discussant",
-        "roles_person2": "Thoughtful Contributor",
+        # 說話者角色（自然討論者）
+        "roles_person1": "Thoughtful Analyst",
+        "roles_person2": "Engaged Discussant",
         
         # 對話結構（來自等級配置）
         "dialogue_structure": level_config['dialogue_structure'],
@@ -166,6 +166,8 @@ def generate_script_only(config_path: str = "./podcast_config.yaml"):
         PACE: {level_config['pace']}
         INTERACTION: {level_config['interaction_level']} interaction
         
+        PRIMARY FOCUS: Content analysis and idea exploration
+        
         NATURAL CONVERSATION MARKERS:
         {chr(10).join('- "' + marker + '"' for marker in level_config['conversation_markers'])}
         
@@ -179,8 +181,14 @@ def generate_script_only(config_path: str = "./podcast_config.yaml"):
         ENGAGEMENT TECHNIQUES:
         {', '.join(level_config['techniques'])}
         
-        AVOID: Teaching language, structured lessons, "let me explain" phrases
-        EMBRACE: Genuine curiosity, collaborative exploration, natural discovery
+        SUBTLE LEARNING MOMENTS (if naturally occurring):
+        - When someone uses a particularly apt, vivid, or precise expression
+        - Natural appreciation: "That's well put", "Good way to describe it", "That captures it"
+        - Frequency: Maybe once per conversation, or not at all - never force it
+        - Always secondary to content discussion
+        
+        AVOID: Teaching language, structured lessons, "let me explain" phrases, forcing vocabulary moments
+        EMBRACE: Genuine curiosity, collaborative exploration, natural discovery, content-first approach
         
         TARGET: {length_config['time_range']} of natural, engaging conversation
         APPROACH: {length_config['approach']}

@@ -80,6 +80,15 @@ def generate_audio_from_script(script_dir: str):
     # 對話風格（從等級配置中獲取）
     style_instructions = ', '.join(level_config['conversation_style'])
     
+    # 語速控制（從等級配置中獲取）
+    pace_instructions = {
+        "slow": "slowly and thoughtfully",
+        "moderate": "at a natural, comfortable pace", 
+        "moderate-fast": "at a brisk, engaging pace",
+        "fast": "energetically and quickly"
+    }
+    pace_instruction = pace_instructions.get(level_config['pace'], "at a natural pace")
+    
     # TTS 模型設定
     tts_model = config['advanced'].get('tts_model', 'gemini-2.5-flash-preview-tts')
     
@@ -87,11 +96,12 @@ def generate_audio_from_script(script_dir: str):
     print(f"   - 主持人 (Person1): {host_voice}")
     print(f"   - 專家 (Person2): {expert_voice}")
     print(f"   - TTS 模型: {tts_model}")
-    print(f"   - 風格: {style_instructions}")
+    print(f"   - 對話風格: {style_instructions}")
+    print(f"   - 語速控制: {pace_instruction}")
     print("-" * 60)
     
-    # 準備 TTS 提示
-    tts_prompt = f"""Say this conversation between Host and Expert with {style_instructions} tone:
+    # 準備 TTS 提示（整合語速控制）
+    tts_prompt = f"""Say this conversation between Host and Expert {pace_instruction} with {style_instructions} tone:
 
 {script_content}"""
     
