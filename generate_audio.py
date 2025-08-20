@@ -62,7 +62,7 @@ def generate_audio_from_script(script_dir: str):
             metadata = json.load(f)
         print(f"📝 腳本資訊:")
         print(f"   - 字數: {metadata.get('actual_words', 'N/A')} 字")
-        print(f"   - 目標時長: {metadata.get('target_minutes', 'N/A')} 分鐘")
+        print(f"   - 播客長度: {metadata.get('podcast_length', 'N/A')} ({metadata.get('time_range', 'N/A')})")
         print(f"   - 英語等級: {metadata.get('english_level', 'N/A')}")
     
     # 載入配置文件取得所有設定

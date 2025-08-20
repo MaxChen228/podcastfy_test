@@ -92,6 +92,7 @@ class PodcastWorkflow:
                     with open(metadata_file, 'r') as f:
                         metadata = json.load(f)
                     print(f"\n📊 腳本統計：")
+                    print(f"   - 播客長度: {metadata.get('podcast_length', 'N/A')} ({metadata.get('time_range', 'N/A')})")
                     print(f"   - 實際字數: {metadata['actual_words']}")
                     print(f"   - 目標字數: {metadata['target_words']}")
                     print(f"   - 準確度: {metadata['accuracy']}")

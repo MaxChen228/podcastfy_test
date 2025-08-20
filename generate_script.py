@@ -35,13 +35,13 @@ def generate_script_only(config_path: str = "./podcast_config.yaml"):
     input_source = config['input']['source']
     input_type = config['input']['type']
     english_level = config['basic']['english_level']
-    target_minutes = config['basic']['target_minutes']
+    podcast_length = config['basic']['podcast_length']
     style_instructions = config['basic']['style_instructions']
     llm_model = config['advanced']['llm_model']
     
     print(f"📥 輸入來源: {input_source}")
     print(f"🎯 英語等級: {english_level}")
-    print(f"⏱️ 目標長度: {target_minutes} 分鐘")
+    print(f"📏 播客長度: {podcast_length}")
     print(f"🤖 LLM 模型: {llm_model}")
     print("-" * 60)
     
@@ -53,25 +53,80 @@ def generate_script_only(config_path: str = "./podcast_config.yaml"):
         min_chunk_size = config['advanced'].get('min_chunk_size', 600)
         print("📌 使用手動配置的長度控制參數")
     else:
-        # 根據目標時長自動計算參數（基於社區最佳實踐）
-        community_best_practices = {
-            0.5: {"word_count": 200, "max_num_chunks": 3, "min_chunk_size": 600},
-            1: {"word_count": 300, "max_num_chunks": 4, "min_chunk_size": 600},
-            2: {"word_count": 600, "max_num_chunks": 5, "min_chunk_size": 600},
-            3: {"word_count": 800, "max_num_chunks": 6, "min_chunk_size": 600},
-            5: {"word_count": 1200, "max_num_chunks": 8, "min_chunk_size": 700},
-            10: {"word_count": 2000, "max_num_chunks": 12, "min_chunk_size": 800},
+        # 四種播客長度模式配置
+        podcast_modes = {
+            "short": {
+                "word_count": 950,
+                "max_num_chunks": 5,
+                "min_chunk_size": 650,
+                "time_range": "3-5 分鐘",
+                "prompt_strategy": """CONCISE and FOCUSED approach:
+                - Brief introduction (15-20 seconds)
+                - Cover 3-4 key points with clear explanations
+                - Use one vivid example or case study
+                - Keep dialogue snappy and engaging
+                - End with clear takeaways
+                Think: "TED-Ed style" - educational, focused, memorable"""
+            },
+            "medium": {
+                "word_count": 2000,
+                "max_num_chunks": 8,
+                "min_chunk_size": 700,
+                "time_range": "6-10 分鐘",
+                "prompt_strategy": """BALANCED and THOROUGH approach:
+                - Proper introduction with context (30 seconds)
+                - Develop 4-5 main points with supporting examples
+                - Include 2-3 interesting anecdotes or case studies
+                - Natural conversational flow with some depth
+                - Address common questions or misconceptions
+                - Conclude with actionable insights and summary
+                Think: "Podcast episode" - comprehensive yet accessible"""
+            },
+            "long": {
+                "word_count": 3300,
+                "max_num_chunks": 12,
+                "min_chunk_size": 800,
+                "time_range": "11-15 分鐘",
+                "prompt_strategy": """IN-DEPTH and ANALYTICAL approach:
+                - Comprehensive introduction with full background
+                - Explore topic from multiple perspectives
+                - Include detailed examples, data, and evidence
+                - Address counterarguments and edge cases
+                - Build complex arguments with logical progression
+                - Allow for nuanced discussion and reflection
+                - Thorough conclusion with future implications
+                Think: "Documentary deep-dive" - rigorous, multi-faceted, insightful"""
+            },
+            "extra-long": {
+                "word_count": 7500,
+                "max_num_chunks": 20,
+                "min_chunk_size": 1000,
+                "time_range": "16-45 分鐘",
+                "prompt_strategy": """COMPREHENSIVE DOCUMENTARY approach:
+                - Extended introduction with historical context
+                - Systematic exploration of all major aspects
+                - Multiple detailed case studies and real-world applications
+                - Expert perspectives and diverse viewpoints
+                - Deep analysis of implications and consequences
+                - Address complexities, paradoxes, and open questions
+                - Thoughtful pacing with natural topic transitions
+                - Comprehensive wrap-up with call-to-action
+                Think: "Full podcast episode" - exhaustive, authoritative, thought-provoking"""
+            }
         }
         
-        # 找到最接近的配置
-        closest_time = min(community_best_practices.keys(), 
-                          key=lambda x: abs(x - target_minutes))
-        params = community_best_practices[closest_time]
+        # 使用選擇的模式
+        if podcast_length not in podcast_modes:
+            print(f"⚠️ 未知的長度模式 '{podcast_length}'，使用預設 'medium'")
+            podcast_length = "medium"
         
-        word_count = params["word_count"]
-        max_num_chunks = params["max_num_chunks"]
-        min_chunk_size = params["min_chunk_size"]
-        print(f"📌 使用自動計算的長度控制參數（基於 {closest_time} 分鐘配置）")
+        mode = podcast_modes[podcast_length]
+        word_count = mode["word_count"]
+        max_num_chunks = mode["max_num_chunks"]
+        min_chunk_size = mode["min_chunk_size"]
+        prompt_strategy = mode["prompt_strategy"]
+        
+        print(f"📌 使用 '{podcast_length}' 模式（{mode['time_range']}）")
     
     # 從配置文件讀取進階設定
     conversation_style = config['advanced'].get('conversation_style', ["engaging", "educational"])
@@ -88,9 +143,14 @@ def generate_script_only(config_path: str = "./podcast_config.yaml"):
         "dialogue_structure": dialogue_structure,
         "custom_instructions": f"""
         Create a podcast conversation for {english_level} English learners.
-        Target duration: {target_minutes} minute(s)
+        Podcast length mode: {podcast_length} ({mode['time_range']})
         Style: {style_instructions}
         Use Person1 as Host and Person2 as Expert.
+        
+        CONTENT STRATEGY:
+        {prompt_strategy}
+        
+        Remember to match the conversation length and depth to the '{podcast_length}' mode.
         """,
         "roles": ["Host", "Expert"],
         "output_folder": "./output"
@@ -199,7 +259,8 @@ def generate_script_only(config_path: str = "./podcast_config.yaml"):
                 "input_source": input_source,
                 "input_type": input_type,
                 "english_level": english_level,
-                "target_minutes": target_minutes,
+                "podcast_length": podcast_length,
+                "time_range": mode['time_range'],
                 "target_words": word_count,
                 "actual_words": word_count_actual,
                 "accuracy": f"{(word_count_actual/word_count*100):.1f}%",
