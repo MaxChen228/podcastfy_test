@@ -46,8 +46,8 @@ python podcast_workflow.py --mode prod
 ```
 podcastfy_test/
 ├── 📝 核心腳本
-│   ├── step1_generate_script.py    # 步驟1：生成腳本
-│   ├── step2_generate_audio.py     # 步驟2：生成音頻
+│   ├── generate_script.py          # 生成腳本
+│   ├── generate_audio.py           # 生成音頻
 │   └── podcast_workflow.py         # 工作流控制器
 │
 ├── ⚙️ 配置

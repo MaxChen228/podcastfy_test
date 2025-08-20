@@ -17,8 +17,8 @@ import subprocess
 from typing import Optional, Dict, Any
 
 # 導入拆分版本的功能
-from step1_generate_script import generate_script_only
-from step2_generate_audio import generate_audio_from_script
+from generate_script import generate_script_only
+from generate_audio import generate_audio_from_script
 
 class PodcastWorkflow:
     """播客生成工作流程控制器"""
