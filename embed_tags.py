@@ -59,7 +59,23 @@ class TagEmbeddingEngine:
         )
     
     def analyze_dialogue_context(self, script_content: str) -> Dict[str, Any]:
-        """分析對話內容，識別情境和情緒"""
+        """分析對話內容，識別情境和情緒 - 支援分段處理"""
+        
+        # 檢查是否需要分段處理
+        word_count = len(script_content.split())
+        chunk_size = self.content_processing.get('chunk_size', 500)
+        
+        if word_count <= chunk_size:
+            # 短腳本，直接分析
+            return self._analyze_single_content(script_content)
+        else:
+            # 長腳本，分段分析
+            print(f"📄 腳本較長（{word_count}字），啟用分段分析...")
+            chunks = self.split_script_into_chunks(script_content)
+            return self.analyze_chunks_context(chunks)
+    
+    def _analyze_single_content(self, script_content: str) -> Dict[str, Any]:
+        """分析單段內容（原有邏輯）"""
         
         analysis_prompt = f"""
         請分析以下播客對話腳本的內容和情境：
@@ -214,12 +230,27 @@ C1/C2 等級指引：
         return prompt
     
     def embed_tags_with_llm(self, script_content: str) -> str:
-        """使用 LLM 進行智能標籤嵌入"""
+        """使用 LLM 進行智能標籤嵌入 - 支援分段處理"""
         
         print("🧠 分析對話內容...")
         analysis = self.analyze_dialogue_context(script_content)
         
         print(f"📊 分析結果：{analysis['mood']} 氛圍，{analysis['pace']} 節奏")
+        
+        # 檢查是否需要分段處理
+        word_count = len(script_content.split())
+        chunk_size = self.content_processing.get('chunk_size', 500)
+        
+        if word_count <= chunk_size:
+            # 短腳本，使用原有邏輯
+            return self._embed_tags_single_chunk(script_content, analysis)
+        else:
+            # 長腳本，分段處理
+            print(f"📄 腳本較長（{word_count}字），啟用分段標籤嵌入...")
+            return self._embed_tags_multiple_chunks(script_content, analysis)
+    
+    def _embed_tags_single_chunk(self, script_content: str, analysis: Dict[str, Any]) -> str:
+        """單段標籤嵌入（原有邏輯）"""
         
         print("🏷️ 生成標籤嵌入提示...")
         prompt = self.generate_tag_embedding_prompt(script_content, analysis)
@@ -264,6 +295,39 @@ C1/C2 等級指引：
             print(f"🔍 詳細錯誤: {traceback.format_exc()}")
             return script_content  # 返回原始腳本作為降級方案
     
+    def _embed_tags_multiple_chunks(self, script_content: str, analysis: Dict[str, Any]) -> str:
+        """多段標籤嵌入（新邏輯）"""
+        
+        # 分段
+        chunks = self.split_script_into_chunks(script_content)
+        tagged_chunks = []
+        previous_emotions = []
+        
+        for i, chunk in enumerate(chunks):
+            print(f"🏷️ 處理第 {i+1}/{len(chunks)} 段標籤嵌入...")
+            
+            # 處理單個分段
+            tagged_chunk = self.process_chunk_with_context(
+                chunk['content'], 
+                i, 
+                len(chunks), 
+                previous_emotions
+            )
+            
+            tagged_chunks.append(tagged_chunk)
+            
+            # 提取這段的情感標籤供下段參考
+            import re
+            emotions_found = re.findall(r'\[(happy|thoughtful|curious|gentle|confident|interested|excited|analytical|professional|supportive|empathetic|sincere|amused|delighted|surprised|warm)\]', tagged_chunk, re.IGNORECASE)
+            if emotions_found:
+                previous_emotions = emotions_found[-3:]  # 保留最近3個情感
+        
+        # 合併所有段落
+        print("🔧 合併所有帶標籤段落...")
+        merged_content = self.merge_tagged_chunks(tagged_chunks, chunks)
+        
+        return merged_content
+    
     def post_process_tags(self, tagged_script: str) -> str:
         """後處理：驗證標籤格式，修正錯誤"""
         
@@ -293,6 +357,219 @@ C1/C2 等級指引：
             prev_empty = is_empty
         
         return '\n'.join(clean_lines)
+    
+    def split_script_into_chunks(self, script_content: str) -> List[Dict[str, Any]]:
+        """將腳本按對話單元分段，避免破壞對話完整性"""
+        
+        chunk_size = self.content_processing.get('chunk_size', 500)
+        overlap_size = self.content_processing.get('overlap_size', 100)
+        
+        # 按 <Person1> 和 <Person2> 分割對話
+        import re
+        dialogue_pattern = r'(<Person[12]>.*?(?=<Person[12]>|$))'
+        dialogues = re.findall(dialogue_pattern, script_content, re.DOTALL)
+        
+        chunks = []
+        current_chunk = ""
+        current_size = 0
+        dialogue_index = 0
+        
+        for dialogue in dialogues:
+            dialogue_size = len(dialogue.split())
+            
+            # 如果加入這段對話會超出大小限制，先保存當前塊
+            if current_size + dialogue_size > chunk_size and current_chunk:
+                chunks.append({
+                    'content': current_chunk.strip(),
+                    'start_dialogue': dialogue_index - len(current_chunk.split('<Person')) + 1,
+                    'word_count': current_size
+                })
+                
+                # 開始新塊，包含重疊內容
+                if overlap_size > 0:
+                    # 取最後幾個對話作為重疊
+                    overlap_dialogues = []
+                    overlap_words = 0
+                    for i in range(len(dialogues) - 1, -1, -1):
+                        if dialogue_index - i < len(chunks) * 3:  # 大概取前面3個對話
+                            test_dialogue = dialogues[i]
+                            test_size = len(test_dialogue.split())
+                            if overlap_words + test_size <= overlap_size:
+                                overlap_dialogues.insert(0, test_dialogue)
+                                overlap_words += test_size
+                            else:
+                                break
+                    current_chunk = ''.join(overlap_dialogues)
+                    current_size = overlap_words
+                else:
+                    current_chunk = ""
+                    current_size = 0
+            
+            current_chunk += dialogue
+            current_size += dialogue_size
+            dialogue_index += 1
+        
+        # 添加最後一個塊
+        if current_chunk.strip():
+            chunks.append({
+                'content': current_chunk.strip(),
+                'start_dialogue': max(0, dialogue_index - len(current_chunk.split('<Person')) + 1),
+                'word_count': current_size
+            })
+        
+        print(f"📄 分段結果：{len(chunks)} 段，平均每段 {sum(c['word_count'] for c in chunks) / len(chunks):.0f} 字")
+        
+        return chunks
+    
+    def analyze_chunks_context(self, chunks: List[Dict[str, Any]]) -> Dict[str, Any]:
+        """分段分析所有塊的內容，合併結果"""
+        
+        all_moods = []
+        all_paces = []
+        all_emotions = []
+        
+        for i, chunk in enumerate(chunks):
+            print(f"🧠 分析第 {i+1}/{len(chunks)} 段...")
+            
+            # 簡化的分析提示，減少 token 使用
+            analysis_prompt = f"""
+            分析這段播客對話的情緒和節奏：
+            
+            {chunk['content']}
+            
+            請簡短回答（JSON格式）：
+            {{
+                "mood": "正面/中性/嚴肅",
+                "pace": "緩慢/中等/快速",
+                "suggested_emotions": ["emotion1", "emotion2"]
+            }}
+            """
+            
+            try:
+                response = self.model.generate_content(
+                    analysis_prompt,
+                    generation_config=self.generation_config
+                )
+                
+                if response and response.text:
+                    analysis_text = response.text.strip()
+                    
+                    # 解析 JSON
+                    if '```json' in analysis_text:
+                        analysis_text = analysis_text.split('```json')[1].split('```')[0].strip()
+                    elif '```' in analysis_text:
+                        analysis_text = analysis_text.split('```')[1].split('```')[0].strip()
+                    
+                    try:
+                        chunk_analysis = json.loads(analysis_text)
+                        all_moods.append(chunk_analysis.get('mood', '中性'))
+                        all_paces.append(chunk_analysis.get('pace', '中等'))
+                        all_emotions.extend(chunk_analysis.get('suggested_emotions', []))
+                    except json.JSONDecodeError:
+                        print(f"⚠️ 第 {i+1} 段分析結果解析失敗")
+                        
+            except Exception as e:
+                print(f"⚠️ 第 {i+1} 段分析失敗: {e}")
+        
+        # 合併所有分析結果
+        from collections import Counter
+        mood_counter = Counter(all_moods)
+        pace_counter = Counter(all_paces)
+        emotion_counter = Counter(all_emotions)
+        
+        merged_analysis = {
+            "mood": mood_counter.most_common(1)[0][0] if mood_counter else "中性",
+            "pace": pace_counter.most_common(1)[0][0] if pace_counter else "中等", 
+            "complexity": "中等",  # 暫時固定
+            "suggested_emotions": [emotion for emotion, _ in emotion_counter.most_common(5)],
+            "pause_strategy": "段落間適度停頓"
+        }
+        
+        return merged_analysis
+    
+    def process_chunk_with_context(self, chunk_content: str, chunk_index: int, total_chunks: int, previous_emotions: List[str] = None) -> str:
+        """處理單個分段的標籤嵌入，包含上下文資訊"""
+        
+        # 生成簡化的提示，減少 token 使用
+        density = self.tag_config.get('density', 'moderate')
+        emotion_range = self.tag_config.get('emotion_range', ['conversational', 'thoughtful'])
+        
+        # 如果有前段情感，加入連貫性指導
+        context_instruction = ""
+        if previous_emotions and chunk_index > 0:
+            context_instruction = f"保持與前段的情感連貫性，前段主要情感：{', '.join(previous_emotions[:3])}"
+        
+        prompt = f"""
+為播客對話嵌入語音標籤。
+
+等級：{self.english_level} | 密度：{density}
+情感範圍：{', '.join(emotion_range[:8])}  
+{context_instruction}
+
+可用標籤：[happy], [thoughtful], [curious], [gentle], [confident], [PAUSE=1s], [PAUSE=2s], [conversational]
+
+對話內容：
+{chunk_content}
+
+輸出帶標籤的對話：
+"""
+        
+        try:
+            response = self.model.generate_content(
+                prompt,
+                generation_config=self.generation_config
+            )
+            
+            if not response or not response.text:
+                return chunk_content
+            
+            tagged_content = response.text.strip()
+            
+            # 移除 markdown 標記
+            if tagged_content.startswith('```'):
+                lines = tagged_content.split('\n')
+                start_idx = 1 if lines[0].startswith('```') else 0
+                end_idx = len(lines)
+                for i in range(len(lines)-1, -1, -1):
+                    if lines[i].strip() == '```':
+                        end_idx = i
+                        break
+                tagged_content = '\n'.join(lines[start_idx:end_idx])
+            
+            return tagged_content
+            
+        except Exception as e:
+            print(f"❌ 第 {chunk_index+1} 段標籤嵌入失敗: {e}")
+            return chunk_content
+    
+    def merge_tagged_chunks(self, tagged_chunks: List[str], chunks_info: List[Dict[str, Any]]) -> str:
+        """合併所有帶標籤的段落，處理重疊和連接"""
+        
+        merged_content = ""
+        
+        for i, tagged_chunk in enumerate(tagged_chunks):
+            if i == 0:
+                # 第一段直接添加
+                merged_content = tagged_chunk
+            else:
+                # 後續段落需要處理重疊
+                overlap_size = self.content_processing.get('overlap_size', 100)
+                
+                if overlap_size > 0:
+                    # 簡單策略：移除重複的對話開頭
+                    lines = tagged_chunk.split('\n')
+                    # 跳過可能重複的前幾個對話
+                    start_line = 0
+                    for j, line in enumerate(lines):
+                        if '<Person' in line and j > 2:  # 跳過前面可能重複的內容
+                            start_line = j
+                            break
+                    
+                    merged_content += '\n' + '\n'.join(lines[start_line:])
+                else:
+                    merged_content += '\n' + tagged_chunk
+        
+        return merged_content
     
     def calculate_tag_statistics(self, original_script: str, tagged_script: str) -> Dict[str, Any]:
         """計算標籤使用統計"""

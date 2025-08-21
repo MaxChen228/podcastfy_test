@@ -442,8 +442,8 @@ tag_embedding:
     
   # 內容處理參數
   content_processing:
-    chunk_size: 4000             # 長腳本分段處理大小 (字符數)
-    overlap_size: 200            # 分段重疊大小 (保持上下文)
+    chunk_size: 500              # 長腳本分段處理大小 (字數) - 每500字一段
+    overlap_size: 100            # 分段重疊大小 (字數) - 保持上下文連貫
     retry_attempts: 3            # API 失敗重試次數
     fallback_enabled: true       # 失敗時是否降級為原始腳本
     
