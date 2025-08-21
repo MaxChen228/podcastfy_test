@@ -142,11 +142,26 @@ class TagEmbeddingEngine:
 建議情感: {', '.join(analysis['suggested_emotions'])}
 
 === 可用標籤參考 ===
-情感標籤: [happy], [sad], [excited], [calm], [thoughtful], [curious], [gentle], [confident], [analytical], [professional]
-語音效果: [laughing], [sighing], [breathing], [whisper], [dramatic]
-停頓控制: [PAUSE=1s], [PAUSE=2s], [PAUSE=500ms], [brief pause], [long pause]
-語調風格: [conversational], [professional], [storytelling], [narrator]
-語速控制: [slow], [fast], [relaxed pace]
+基礎情感標籤: [happy], [sad], [excited], [calm], [thoughtful], [curious], [gentle], [confident], [analytical], [professional]
+
+進階情感標籤: [passionate], [amused], [empathetic], [sincere], [surprised], [delighted], [frustrated], [nervous], [proud], [grateful], [relaxed], [serious], [interested], [confused], [hesitating]
+
+情感強度標籤: 
+- 開心系列: [happy] → [excited] → [delighted] → [joyful]
+- 思考系列: [curious] → [thoughtful] → [analytical] → [insightful]
+- 專業系列: [conversational] → [professional] → [authoritative] → [expert]
+
+語音效果標籤: [laughing], [chuckling], [giggles], [sighing], [breathing], [whisper], [dramatic], [gasping], [yawning], [coughing], [sniffing], [groaning]
+
+複合情感標籤: [thoughtfully curious], [analytically engaged], [gently excited], [professionally passionate], [confidently analytical], [warmly supportive]
+
+停頓控制: [PAUSE=1s], [PAUSE=2s], [PAUSE=500ms], [PAUSE=3s], [brief pause], [long pause], [dramatic pause]
+
+語調風格: [conversational], [professional], [storytelling], [narrator], [robotic], [childlike], [sarcastic], [comforting]
+
+音量與強度: [whisper], [soft], [loud], [shout], [gentle], [dramatic], [emphasized], [intense]
+
+語速控制: [slow], [fast], [rushed], [relaxed pace]
 
 === 標籤嵌入指引 ===
 """
@@ -215,7 +230,19 @@ C1/C2 等級指引：
                 prompt,
                 generation_config=self.generation_config
             )
+            
+            print(f"🔍 LLM 回應狀態: {response}")
+            
+            if not response or not response.text:
+                print("❌ LLM 沒有返回內容")
+                return script_content
+            
             tagged_content = response.text.strip()
+            print(f"📝 LLM 回應長度: {len(tagged_content)} 字符")
+            
+            if len(tagged_content) < 100:
+                print(f"⚠️ 回應內容異常短: {tagged_content[:200]}...")
+                return script_content
             
             # 移除可能的 markdown 格式標記
             if tagged_content.startswith('```'):
@@ -227,11 +254,14 @@ C1/C2 等級指引：
                         end_idx = i
                         break
                 tagged_content = '\n'.join(lines[start_idx:end_idx])
+                print("🔧 移除了 markdown 格式標記")
             
             return tagged_content
             
         except Exception as e:
             print(f"❌ LLM 標籤嵌入失敗: {e}")
+            import traceback
+            print(f"🔍 詳細錯誤: {traceback.format_exc()}")
             return script_content  # 返回原始腳本作為降級方案
     
     def post_process_tags(self, tagged_script: str) -> str:

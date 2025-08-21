@@ -14,11 +14,11 @@ basic:
   # B2: 分析者 - 深入對話，專業詞彙
   # C1: 智者 - 快速洞察，直接核心
   # C2: 大師 - 專精論述，複雜關聯
-  english_level: "B1"
+  english_level: "A2"
   
   # 播客長度
   # short: 3-5分鐘, medium: 6-10分鐘, long: 11-15分鐘, extra-long: 16-45分鐘
-  podcast_length: "medium"
+  podcast_length: "long"
 
 # ┌─────────────────────────────────────────────────────────────────────────┐
 # │                            輸入來源 (Input Sources)                        │
@@ -26,10 +26,10 @@ basic:
 input:
   # 多資料來源支援
   sources:
-    - "https://medium.com/write-a-catalyst/you-are-fired-now-80458d77205a"
-    - "https://medium.com/@huonglanchu/managing-technical-debt-in-the-age-of-vibe-coding-1ceafd97b0a2"
-    - "https://medium.com/entrepreneur-s-handbook/lets-talk-about-what-vibe-coding-is-really-for-984bd7d19497"
-    - "https://medium.com/entrepreneur-s-handbook/should-you-be-vibe-coding-c56b5f0708a1"
+    - "https://medium.com/westenberg/i-deleted-my-second-brain-b7a65bce3717"
+    - "https://medium.com/write-a-catalyst/i-self-hosted-openais-gpt-3-5-turbo-to-build-my-own-ai-second-brain-8e1852b93228"
+    - "https://medium.com/pen-with-paper/this-8-second-brain-hack-will-end-your-procrastination-forever-d640256a1023"
+    - "https://medium.com/@xception08/support-your-gut-its-your-second-brain-cba7b5abf256"
   type: "multi"
 
 # ┌─────────────────────────────────────────────────────────────────────────┐
@@ -44,7 +44,7 @@ level_configs:
     pace: "slow"
     knowledge_density: "very_low"
     interaction_level: "high"
-    creativity: 0.3
+    creativity: 0.4
     techniques: ["simple analogies", "concrete examples", "gentle questioning", "patient exploration", "encouraging discoveries"]
     dialogue_structure: [
       "Friendly Hello & What We're Curious About",
@@ -69,7 +69,7 @@ level_configs:
       "That reminds me...",
       "I'm curious about..."
     ]
-    content_pacing: "very_slow"  # 段落間充分停頓
+    content_pacing: "slow"  # 段落間充分停頓
     structural_depth: "basic"  # 簡單2-3層結構
     
     # 概念拆解與重複配置
@@ -90,10 +90,10 @@ level_configs:
     
     # 標籤嵌入策略配置
     tag_embedding:
-      density: "low"                    # 標籤使用密度
-      emotion_range: ["gentle", "curious", "supportive", "happy", "thoughtful"]
+      density: "moderate"               # 標籤使用密度
+      emotion_range: ["gentle", "curious", "supportive", "happy", "thoughtful", "excited", "surprised", "warm", "delighted", "interested"]
       pause_frequency: "high"           # 暫停頻率
-      prosody_usage: "minimal"          # 語調變化使用程度
+      prosody_usage: "selective"        # 語調變化使用程度
       primary_style: "[conversational]"
     
   A2:  # 好奇者 - 耐心建立理解
@@ -149,10 +149,10 @@ level_configs:
     
     # 標籤嵌入策略配置
     tag_embedding:
-      density: "low_moderate"           # 標籤使用密度
-      emotion_range: ["curious", "interested", "thoughtful", "supportive", "gentle"]
+      density: "moderate"               # 標籤使用密度
+      emotion_range: ["curious", "interested", "thoughtful", "supportive", "gentle", "empathetic", "sincere", "amused", "confident", "engaged"]
       pause_frequency: "moderate_high"  # 暫停頻率
-      prosody_usage: "selective"        # 語調變化使用程度
+      prosody_usage: "moderate"         # 語調變化使用程度
       primary_style: "[conversational]"
     
   B1:  # 討論者 - 平衡探索
@@ -210,10 +210,10 @@ level_configs:
     
     # 標籤嵌入策略配置
     tag_embedding:
-      density: "moderate"               # 標籤使用密度
-      emotion_range: ["thoughtful", "engaged", "analytical", "curious", "balanced"]
+      density: "high"                   # 標籤使用密度
+      emotion_range: ["thoughtful", "engaged", "analytical", "curious", "balanced", "confident", "amused", "empathetic", "passionate", "insightful", "surprised"]
       pause_frequency: "moderate"       # 暫停頻率
-      prosody_usage: "selective"        # 語調變化使用程度
+      prosody_usage: "rich"             # 語調變化使用程度
       primary_style: "[conversational]"
     
   B2:  # 分析者 - 深入對話
@@ -270,10 +270,10 @@ level_configs:
     
     # 標籤嵌入策略配置
     tag_embedding:
-      density: "moderate_high"          # 標籤使用密度
-      emotion_range: ["analytical", "thoughtful", "professional", "insightful", "confident"]
+      density: "high"                   # 標籤使用密度
+      emotion_range: ["analytical", "thoughtful", "professional", "insightful", "confident", "passionate", "sophisticated", "authoritative", "intense", "focused"]
       pause_frequency: "strategic"      # 暫停頻率
-      prosody_usage: "moderate"         # 語調變化使用程度
+      prosody_usage: "rich"             # 語調變化使用程度
       primary_style: "[professional]"
     
   C1:  # 智者 - 快速洞察
@@ -329,10 +329,10 @@ level_configs:
     
     # 標籤嵌入策略配置
     tag_embedding:
-      density: "high"                   # 標籤使用密度
-      emotion_range: ["analytical", "insightful", "professional", "sharp", "sophisticated"]
+      density: "very_high"              # 標籤使用密度
+      emotion_range: ["analytical", "insightful", "professional", "sharp", "sophisticated", "authoritative", "expert", "intense", "focused", "strategic"]
       pause_frequency: "strategic"      # 暫停頻率
-      prosody_usage: "rich"             # 語調變化使用程度
+      prosody_usage: "very_rich"        # 語調變化使用程度
       primary_style: "[professional]"
     
   C2:  # 大師 - 專精論述
@@ -388,10 +388,10 @@ level_configs:
     
     # 標籤嵌入策略配置
     tag_embedding:
-      density: "high"                   # 標籤使用密度
-      emotion_range: ["analytical", "sophisticated", "authoritative", "insightful", "professional", "expert"]
+      density: "very_high"              # 標籤使用密度
+      emotion_range: ["analytical", "sophisticated", "authoritative", "insightful", "professional", "expert", "masterful", "nuanced", "strategic", "commanding", "precise"]
       pause_frequency: "strategic"      # 暫停頻率
-      prosody_usage: "rich"             # 語調變化使用程度
+      prosody_usage: "very_rich"        # 語調變化使用程度
       primary_style: "[professional]"
 
 # ┌─────────────────────────────────────────────────────────────────────────┐
@@ -431,7 +431,7 @@ length_configs:
 # └─────────────────────────────────────────────────────────────────────────┘
 tag_embedding:
   enabled: true
-  llm_model: "gemini-2.0-flash-exp"  # LLM 模型用於標籤嵌入
+  llm_model: "gemini-2.5-flash"  # LLM 模型用於標籤嵌入
   
   # LLM 模型參數配置
   model_parameters:
@@ -449,7 +449,7 @@ tag_embedding:
     
   # 標籤驗證參數
   tag_validation:
-    max_tags_per_100_words: 15   # 標籤密度上限控制
+    max_tags_per_100_words: 25   # 標籤密度上限控制（提高以支援豐富情感）
     remove_invalid_tags: true    # 移除無效標籤
     fix_format_errors: true      # 自動修正格式錯誤
 
