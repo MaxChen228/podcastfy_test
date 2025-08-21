@@ -72,6 +72,22 @@ level_configs:
     content_pacing: "very_slow"  # 段落間充分停頓
     structural_depth: "basic"  # 簡單2-3層結構
     
+    # 概念拆解與重複配置
+    concept_processing:
+      explanation_depth: "immediate"  # 立即解釋所有複雜概念
+      breakdown_style: "simple_analogy"  # 用簡單類比拆解
+      technical_terms: "avoid_completely"  # 完全避免技術術語
+    
+    vocabulary_adaptation:
+      complexity_level: "basic_everyday"  # 基礎日常詞彙
+      explanation_trigger: "any_unfamiliar"  # 任何不熟悉詞彙都解釋
+      synonym_usage: "simpler_alternatives"  # 使用更簡單的同義詞
+    
+    repetition_strategy:
+      frequency: "high"  # 高頻重複重要概念
+      methods: ["paraphrasing", "analogies", "examples", "questions"]
+      pattern: "immediate_reinforce"  # 概念出現後立即強化
+    
   A2:  # 好奇者 - 耐心建立理解
     style_name: "好奇者"
     conversation_style: ["curious", "patient", "supportive", "encouraging", "friendly"]
@@ -106,6 +122,22 @@ level_configs:
     ]
     content_pacing: "slow"  # 適度停頓和思考時間
     structural_depth: "layered"  # 3-4層漸進結構
+    
+    # 概念拆解與重複配置
+    concept_processing:
+      explanation_depth: "step_by_step"  # 逐步建立概念理解
+      breakdown_style: "familiar_examples"  # 用熟悉例子拆解
+      technical_terms: "explain_when_used"  # 使用時立即解釋
+    
+    vocabulary_adaptation:
+      complexity_level: "intermediate_friendly"  # 中等友善詞彙
+      explanation_trigger: "technical_terms"  # 技術術語觸發解釋
+      synonym_usage: "clarifying_alternatives"  # 澄清性同義詞
+    
+    repetition_strategy:
+      frequency: "moderate_high"  # 中高頻重複
+      methods: ["rephrasing", "examples", "building_understanding"]
+      pattern: "gradual_reinforce"  # 漸進式強化理解
     
   B1:  # 討論者 - 平衡探索
     style_name: "討論者"
@@ -144,6 +176,22 @@ level_configs:
     content_pacing: "moderate"  # 平衡的節奏感
     structural_depth: "sophisticated"  # 4-5層深入分析
     
+    # 概念拆解與重複配置
+    concept_processing:
+      explanation_depth: "contextual"  # 根據上下文決定解釋深度
+      breakdown_style: "comparative_analysis"  # 對比分析式拆解
+      technical_terms: "introduce_then_use"  # 介紹後自然使用
+    
+    vocabulary_adaptation:
+      complexity_level: "mixed_professional"  # 混合專業詞彙
+      explanation_trigger: "complex_concepts"  # 複雜概念觸發拆解
+      synonym_usage: "varied_expression"  # 多樣化表達方式
+    
+    repetition_strategy:
+      frequency: "moderate"  # 適度重複
+      methods: ["reframing", "multiple_angles", "connecting_ideas"]
+      pattern: "strategic_reinforce"  # 戰略性強化關鍵概念
+    
   B2:  # 分析者 - 深入對話
     style_name: "分析者"
     conversation_style: ["analytical", "sophisticated", "insightful", "professional", "articulate"]
@@ -180,6 +228,22 @@ level_configs:
     content_pacing: "brisk"  # 較快節奏，專業效率
     structural_depth: "complex"  # 5-6層複雜分析
     
+    # 概念拆解與重複配置
+    concept_processing:
+      explanation_depth: "analytical"  # 分析性深入解釋
+      breakdown_style: "systematic_analysis"  # 系統性分析拆解
+      technical_terms: "professional_usage"  # 專業術語恰當使用
+    
+    vocabulary_adaptation:
+      complexity_level: "professional_nuanced"  # 專業細致詞彙
+      explanation_trigger: "abstract_concepts"  # 抽象概念觸發拆解
+      synonym_usage: "sophisticated_alternatives"  # 精細同義表達
+    
+    repetition_strategy:
+      frequency: "selective"  # 選擇性重複關鍵洞察
+      methods: ["nuanced_reframing", "strategic_emphasis", "analytical_reinforcement"]
+      pattern: "insight_driven"  # 洞察驅動的重述
+    
   C1:  # 智者 - 快速洞察
     style_name: "智者"
     conversation_style: ["sharp", "analytical", "sophisticated", "direct", "insightful"]
@@ -215,6 +279,22 @@ level_configs:
     content_pacing: "rapid"  # 快速節奏，直擊要點
     structural_depth: "expert"  # 6-7層專家級分析
     
+    # 概念拆解與重複配置
+    concept_processing:
+      explanation_depth: "strategic"  # 戰略性選擇性解釋
+      breakdown_style: "systemic_insight"  # 系統性洞察拆解
+      technical_terms: "expert_fluency"  # 專家級流暢使用
+    
+    vocabulary_adaptation:
+      complexity_level: "expert_precise"  # 專家精確詞彙
+      explanation_trigger: "fundamental_shifts"  # 根本性轉變觸發解釋
+      synonym_usage: "precise_technical"  # 精確技術表達
+    
+    repetition_strategy:
+      frequency: "minimal_strategic"  # 最少戰略性重述
+      methods: ["sharp_reinforcement", "systemic_connection", "insight_crystallization"]
+      pattern: "breakthrough_moments"  # 突破性洞察時刻
+    
   C2:  # 大師 - 專精論述
     style_name: "大師"
     conversation_style: ["expert", "sophisticated", "nuanced", "authoritative", "complex"]
@@ -249,6 +329,22 @@ level_configs:
     ]
     content_pacing: "intensive"  # 密集高強度分析
     structural_depth: "masterful"  # 7-8層大師級架構
+    
+    # 概念拆解與重複配置
+    concept_processing:
+      explanation_depth: "multi_dimensional"  # 多維度解釋
+      breakdown_style: "integrated_complexity"  # 整合性複雜分析
+      technical_terms: "seamless_integration"  # 無縫整合使用
+    
+    vocabulary_adaptation:
+      complexity_level: "masterful_sophisticated"  # 大師級精巧詞彙
+      explanation_trigger: "paradigm_complexity"  # 範式複雜性觸發
+      synonym_usage: "authoritative_precision"  # 權威精確表達
+    
+    repetition_strategy:
+      frequency: "rare_crystallized"  # 稀有的結晶化重述
+      methods: ["masterful_synthesis", "paradigm_reinforcement", "authoritative_confirmation"]
+      pattern: "mastery_moments"  # 大師級洞察時刻
 
 # ┌─────────────────────────────────────────────────────────────────────────┐
 # │                    長度自動配置 (Length Auto-Configuration)                 │

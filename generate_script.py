@@ -181,6 +181,35 @@ def generate_script_only(config_path: str = "./podcast_config.yaml"):
         === ENGAGEMENT FACTORS ===
         Integrate these elements throughout: {', '.join(level_config.get('engagement_factors', level_config['techniques']))}
         
+        === CONCEPT PROCESSING STRATEGY ===
+        Explanation depth: {level_config.get('concept_processing', {}).get('explanation_depth', 'balanced')}
+        Breakdown style: {level_config.get('concept_processing', {}).get('breakdown_style', 'natural')}
+        Technical terms: {level_config.get('concept_processing', {}).get('technical_terms', 'contextual')}
+        
+        CONCEPT BREAKDOWN RULES:
+        - Complex concepts: Break down using {level_config.get('concept_processing', {}).get('breakdown_style', 'examples')}
+        - Technical terms: Handle with {level_config.get('concept_processing', {}).get('technical_terms', 'explanation')} approach
+        - Explanation trigger: {level_config.get('vocabulary_adaptation', {}).get('explanation_trigger', 'when_needed')}
+        
+        === VOCABULARY ADAPTATION ===
+        Complexity level: {level_config.get('vocabulary_adaptation', {}).get('complexity_level', 'balanced')}
+        Synonym usage: {level_config.get('vocabulary_adaptation', {}).get('synonym_usage', 'natural')}
+        
+        VOCABULARY GUIDELINES:
+        - Use {level_config.get('vocabulary_adaptation', {}).get('complexity_level', 'appropriate')} vocabulary
+        - When introducing complex terms, provide {level_config.get('vocabulary_adaptation', {}).get('synonym_usage', 'alternatives')}
+        - Explain concepts using familiar language first, then introduce precise terms
+        
+        === REPETITION STRATEGY ===
+        Frequency: {level_config.get('repetition_strategy', {}).get('frequency', 'natural')}
+        Methods: {', '.join(level_config.get('repetition_strategy', {}).get('methods', ['natural repetition']))}
+        Pattern: {level_config.get('repetition_strategy', {}).get('pattern', 'organic')}
+        
+        REPETITION GUIDELINES:
+        - Important concepts should be naturally revisited using: {', '.join(level_config.get('repetition_strategy', {}).get('methods', ['paraphrasing']))}
+        - Follow {level_config.get('repetition_strategy', {}).get('pattern', 'natural')} pattern for reinforcement
+        - Ensure {level_config.get('repetition_strategy', {}).get('frequency', 'appropriate')} repetition without being redundant
+        
         === TRANSITION GUIDELINES ===
         Use these natural transition phrases to connect sections:
         {chr(10).join('- "' + phrase + '"' for phrase in level_config.get('transition_phrases', level_config['conversation_markers']))}
