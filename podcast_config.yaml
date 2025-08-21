@@ -60,6 +60,17 @@ level_configs:
       "Wait, can you help me understand...",
       "That makes me think of..."
     ]
+    # 專業結構化配置
+    engagement_factors: ["questions", "examples", "simple analogies", "encouraging discoveries"]
+    interaction_markers: ["gentle transitions", "patient pauses", "supportive acknowledgments"]
+    transition_phrases: [
+      "Let's explore this together...",
+      "What do you think about...",
+      "That reminds me...",
+      "I'm curious about..."
+    ]
+    content_pacing: "very_slow"  # 段落間充分停頓
+    structural_depth: "basic"  # 簡單2-3層結構
     
   A2:  # 好奇者 - 耐心建立理解
     style_name: "好奇者"
@@ -84,6 +95,17 @@ level_configs:
       "So if I understand correctly...",
       "Oh, that helps me picture it!"
     ]
+    # 專業結構化配置
+    engagement_factors: ["questions", "examples", "familiar analogies", "step-by-step explanations"]
+    interaction_markers: ["clarifying questions", "understanding checks", "encouraging nods"]
+    transition_phrases: [
+      "That's a great point, let me build on that...",
+      "So if I understand correctly...",
+      "That reminds me of...",
+      "Let's think about this step by step..."
+    ]
+    content_pacing: "slow"  # 適度停頓和思考時間
+    structural_depth: "layered"  # 3-4層漸進結構
     
   B1:  # 討論者 - 平衡探索
     style_name: "討論者"
@@ -108,6 +130,19 @@ level_configs:
       "Building on what you said...",
       "That raises an interesting point..."
     ]
+    # 專業結構化配置
+    engagement_factors: ["questions", "examples", "analogies", "comparative analysis", "multiple perspectives"]
+    interaction_markers: ["thoughtful transitions", "analytical bridges", "perspective shifts"]
+    transition_phrases: [
+      "What's really interesting here is...",
+      "Building on what you said...",
+      "From a different angle...",
+      "This connects to something broader...",
+      "Let me give you a concrete example...",
+      "The implications of this are..."
+    ]
+    content_pacing: "moderate"  # 平衡的節奏感
+    structural_depth: "sophisticated"  # 4-5層深入分析
     
   B2:  # 分析者 - 深入對話
     style_name: "分析者"
@@ -132,6 +167,18 @@ level_configs:
       "There's a deeper pattern here...",
       "The implications extend to..."
     ]
+    # 專業結構化配置
+    engagement_factors: ["analytical questions", "nuanced examples", "strategic implications", "abstract concepts"]
+    interaction_markers: ["analytical depth", "sophisticated transitions", "strategic pauses"]
+    transition_phrases: [
+      "The really interesting aspect here is...",
+      "What this reveals is...",
+      "Looking at this more strategically...",
+      "The underlying pattern suggests...",
+      "From a broader perspective..."
+    ]
+    content_pacing: "brisk"  # 較快節奏，專業效率
+    structural_depth: "complex"  # 5-6層複雜分析
     
   C1:  # 智者 - 快速洞察
     style_name: "智者"
@@ -155,6 +202,18 @@ level_configs:
       "This connects to the broader...",
       "The strategic implication is..."
     ]
+    # 專業結構化配置
+    engagement_factors: ["sharp insights", "systemic connections", "strategic implications", "sophisticated analysis"]
+    interaction_markers: ["direct transitions", "sharp focus shifts", "insight moments"]
+    transition_phrases: [
+      "The real question here is...",
+      "What's particularly significant is...",
+      "The strategic implication is...",
+      "This reveals something fundamental...",
+      "The systemic impact suggests..."
+    ]
+    content_pacing: "rapid"  # 快速節奏，直擊要點
+    structural_depth: "expert"  # 6-7層專家級分析
     
   C2:  # 大師 - 專精論述
     style_name: "大師"
@@ -178,6 +237,18 @@ level_configs:
       "The multi-layered implications...",
       "From a systemic perspective..."
     ]
+    # 專業結構化配置
+    engagement_factors: ["sophisticated discourse", "multi-layered analysis", "technical precision", "complex interdependencies"]
+    interaction_markers: ["expert continuity", "seamless integration", "authoritative flow"]
+    transition_phrases: [
+      "The fundamental dynamics at play...",
+      "What's particularly sophisticated about this...",
+      "The multi-layered implications suggest...",
+      "From a systemic perspective...",
+      "The complex interdependencies reveal..."
+    ]
+    content_pacing: "intensive"  # 密集高強度分析
+    structural_depth: "masterful"  # 7-8層大師級架構
 
 # ┌─────────────────────────────────────────────────────────────────────────┐
 # │                    長度自動配置 (Length Auto-Configuration)                 │
@@ -243,6 +314,33 @@ natural_conversation_core: |
   
   🎯 目標：真實的智識好奇心，不是結構化教育
 
+# ┌─────────────────────────────────────────────────────────────────────────┐
+# │                     專業結構化配置說明 (Professional Structure Guide)           │
+# └─────────────────────────────────────────────────────────────────────────┘
+
+professional_structure_guide: |
+  🏗️ 新增專業結構化功能：
+  
+  ✅ engagement_factors: 參與要素控制
+  - 定義每個等級使用的具體參與技巧
+  - 如：questions, examples, analogies, analysis等
+  
+  ✅ interaction_markers: 互動標記
+  - 控制對話間的過渡和連接方式
+  - 如：gentle transitions, analytical bridges等
+  
+  ✅ transition_phrases: 過渡語句
+  - 具體的段落轉換用語
+  - 提升對話自然度和流暢性
+  
+  ✅ content_pacing: 內容節奏
+  - very_slow → intensive: 控制段落間節奏
+  - 配合pace參數優化整體體驗
+  
+  ✅ structural_depth: 結構深度
+  - basic → masterful: 控制分析層次
+  - 從2-3層到7-8層的漸進複雜度
+
 # ╔══════════════════════════════════════════════════════════════════════════╗
 # ║                          快速使用指南 (Quick Guide)                          ║
 # ╚══════════════════════════════════════════════════════════════════════════╝
@@ -254,5 +352,5 @@ usage_guide: |
   3. 執行：python generate_script.py
 
 # ═══════════════════════════════════════════════════════════════════════════
-# 統一配置版本：3.0 | 最後更新：2024-12 | 自然對話優先設計
+# 統一配置版本：4.0 | 最後更新：2025-01 | 專業結構化對話設計
 # ═══════════════════════════════════════════════════════════════════════════

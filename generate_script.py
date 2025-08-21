@@ -105,6 +105,12 @@ def generate_script_only(config_path: str = "./podcast_config.yaml"):
     print(f"📏 播客長度: {podcast_length} ({length_config['time_range']})")
     print(f"🤖 LLM 模型: {llm_model}")
     print(f"🎭 對話風格: {', '.join(level_config['conversation_style'])}")
+    
+    # 新增結構化配置顯示
+    print(f"🏗️ 結構深度: {level_config.get('structural_depth', 'balanced')}")
+    print(f"⏱️ 內容節奏: {level_config.get('content_pacing', level_config['pace'])}")
+    print(f"🧩 參與要素: {', '.join(level_config.get('engagement_factors', level_config['techniques'])[:3])}...")
+    print(f"📋 對話結構: {len(level_config['dialogue_structure'])} 個段落")
     print("-" * 60)
     
     # 使用統一配置的長度和等級設定
@@ -157,38 +163,58 @@ def generate_script_only(config_path: str = "./podcast_config.yaml"):
         # 創造力控制（來自等級配置）
         "creativity": level_config['creativity'],
         
-        # 自然對話指令（根據等級自動生成）
+        # 結構化對話指令（專業版本4.0）
         "custom_instructions": f"""
-        Create a natural conversation between two genuinely curious people exploring this topic.
+        Create a natural, structured conversation between two genuinely curious people exploring this topic.
         
-        CONVERSATION LEVEL: {english_level} ({level_config['style_name']})
+        === CONVERSATION PROFILE ===
+        LEVEL: {english_level} ({level_config['style_name']})
         KNOWLEDGE DENSITY: {level_config['knowledge_density']}
         PACE: {level_config['pace']}
         INTERACTION: {level_config['interaction_level']} interaction
+        STRUCTURAL DEPTH: {level_config.get('structural_depth', 'balanced')}
         
-        PRIMARY FOCUS: Content analysis and idea exploration
+        === DIALOGUE STRUCTURE ===
+        Follow this {len(level_config['dialogue_structure'])}-part structure naturally:
+        {chr(10).join(f'{i+1}. {section}' for i, section in enumerate(level_config['dialogue_structure']))}
         
-        NATURAL CONVERSATION MARKERS:
-        {chr(10).join('- "' + marker + '"' for marker in level_config['conversation_markers'])}
+        === ENGAGEMENT FACTORS ===
+        Integrate these elements throughout: {', '.join(level_config.get('engagement_factors', level_config['techniques']))}
         
-        CONVERSATION PRINCIPLES:
+        === TRANSITION GUIDELINES ===
+        Use these natural transition phrases to connect sections:
+        {chr(10).join('- "' + phrase + '"' for phrase in level_config.get('transition_phrases', level_config['conversation_markers']))}
+        
+        === CONTENT PACING ===
+        Content rhythm: {level_config.get('content_pacing', level_config['pace'])} - Allow natural pauses and reflection points between major sections
+        
+        === INTERACTION MARKERS ===
+        Conversation flow: {', '.join(level_config.get('interaction_markers', ['natural flow', 'organic development']))}
+        
+        === CORE PRINCIPLES ===
         1. Both speakers are genuinely curious and engaged
         2. Knowledge emerges through natural discussion, not teaching
-        3. Use authentic reactions and organic idea building
-        4. Maintain {level_config['pace']} pace with {level_config['interaction_level']} interaction
-        5. Apply {level_config['knowledge_density']} knowledge density naturally
+        3. Each dialogue section has a clear purpose but flows naturally
+        4. Use authentic reactions and organic idea building
+        5. Maintain {level_config['pace']} pace with {level_config['interaction_level']} interaction
+        6. Apply {level_config['knowledge_density']} knowledge density naturally
         
-        ENGAGEMENT TECHNIQUES:
-        {', '.join(level_config['techniques'])}
+        === NATURAL CONVERSATION MARKERS ===
+        Weave these naturally throughout:
+        {chr(10).join('- "' + marker + '"' for marker in level_config['conversation_markers'])}
         
-        SUBTLE LEARNING MOMENTS (if naturally occurring):
+        === SUBTLE LEARNING MOMENTS ===
+        (If naturally occurring):
         - When someone uses a particularly apt, vivid, or precise expression
         - Natural appreciation: "That's well put", "Good way to describe it", "That captures it"
         - Frequency: Maybe once per conversation, or not at all - never force it
         - Always secondary to content discussion
         
-        AVOID: Teaching language, structured lessons, "let me explain" phrases, forcing vocabulary moments
-        EMBRACE: Genuine curiosity, collaborative exploration, natural discovery, content-first approach
+        === AVOID ===
+        Teaching language, structured lessons, "let me explain" phrases, forcing vocabulary moments, rigid adherence to structure
+        
+        === EMBRACE ===
+        Genuine curiosity, collaborative exploration, natural discovery, content-first approach, organic flow between sections
         
         TARGET: {length_config['time_range']} of natural, engaging conversation
         APPROACH: {length_config['approach']}
