@@ -18,6 +18,7 @@ from typing import Optional, Dict, Any
 
 # 導入拆分版本的功能
 from generate_script import generate_script_only
+from embed_tags import embed_tags_with_llm
 from generate_audio import generate_audio_from_script
 
 class PodcastWorkflow:
@@ -32,6 +33,7 @@ class PodcastWorkflow:
         self.mode = mode
         self.auto_confirm = auto_confirm
         self.script_dir = None
+        self.tagged_script_dir = None
         self.audio_dir = None
         
     def confirm_step(self, message: str) -> bool:
@@ -106,9 +108,41 @@ class PodcastWorkflow:
             print(f"❌ 執行錯誤: {e}")
             return None
     
-    def run_step2_audio(self, script_dir: str) -> Optional[str]:
-        """執行步驟2：生成音頻"""
-        print("\n🚀 步驟 2: 生成音頻")
+    def run_step2_embed_tags(self, script_dir: str, config_path: str = "./podcast_config.yaml") -> Optional[str]:
+        """執行步驟2：LLM智能嵌入標籤"""
+        print("\n🚀 步驟 2: LLM 智能標籤嵌入")
+        print("-"*60)
+        
+        try:
+            # 調用標籤嵌入引擎
+            tagged_script_dir = embed_tags_with_llm(script_dir, config_path)
+            
+            if tagged_script_dir:
+                self.tagged_script_dir = tagged_script_dir
+                
+                # 顯示標籤嵌入統計
+                metadata_file = Path(tagged_script_dir) / "tag_metadata.json"
+                if metadata_file.exists():
+                    with open(metadata_file, 'r') as f:
+                        metadata = json.load(f)
+                    
+                    tag_stats = metadata.get('tag_embedding', {}).get('statistics', {})
+                    print(f"\n📊 標籤統計：")
+                    print(f"   - 總標籤數: {tag_stats.get('total_tags', 'N/A')}")
+                    print(f"   - 標籤密度: 每100字 {tag_stats.get('tags_per_100_words', 'N/A')} 個")
+                
+                return tagged_script_dir
+            else:
+                print("❌ 標籤嵌入失敗")
+                return None
+                
+        except Exception as e:
+            print(f"❌ 執行錯誤: {e}")
+            return None
+    
+    def run_step3_audio(self, script_dir: str) -> Optional[str]:
+        """執行步驟3：生成音頻"""
+        print("\n🚀 步驟 3: 生成音頻")
         print("-"*60)
         
         try:
@@ -128,7 +162,7 @@ class PodcastWorkflow:
     
     def run_dev_mode(self, config_path: str = "./podcast_config.yaml"):
         """開發模式：每步確認"""
-        print("\n🔧 開發模式：步驟分離，可隨時中斷")
+        print("\n🔧 開發模式：三步驟分離，可隨時中斷")
         
         # Step 1: 生成腳本
         script_dir = self.run_step1_script(config_path)
@@ -136,26 +170,40 @@ class PodcastWorkflow:
             print("❌ 工作流程終止：腳本生成失敗")
             return False
         
-        # 確認是否繼續生成音頻
-        if not self.confirm_step("腳本已生成，是否繼續生成音頻？"):
+        # 確認是否繼續標籤嵌入
+        if not self.confirm_step("腳本已生成，是否繼續進行標籤嵌入？"):
             print("✅ 工作流程停止在腳本階段")
             print(f"📁 腳本位置: {script_dir}")
             return True
         
-        # Step 2: 生成音頻
-        audio_dir = self.run_step2_audio(script_dir)
+        # Step 2: 標籤嵌入
+        tagged_script_dir = self.run_step2_embed_tags(script_dir, config_path)
+        if not tagged_script_dir:
+            print("❌ 工作流程終止：標籤嵌入失敗")
+            return False
+        
+        # 確認是否繼續生成音頻
+        if not self.confirm_step("標籤嵌入已完成，是否繼續生成音頻？"):
+            print("✅ 工作流程停止在標籤階段")
+            print(f"📁 腳本位置: {script_dir}")
+            print(f"📁 帶標籤腳本位置: {tagged_script_dir}")
+            return True
+        
+        # Step 3: 生成音頻
+        audio_dir = self.run_step3_audio(tagged_script_dir)
         if not audio_dir:
             print("❌ 工作流程終止：音頻生成失敗")
             return False
         
-        print("\n✅ 工作流程完成！")
-        print(f"📁 腳本位置: {script_dir}")
+        print("\n✅ 三步驟工作流程完成！")
+        print(f"📁 原始腳本: {script_dir}")
+        print(f"📁 帶標籤腳本: {tagged_script_dir}")
         print(f"📁 音頻位置: {audio_dir}")
         return True
     
     def run_prod_mode(self, config_path: str = "./podcast_config.yaml"):
         """生產模式：自動執行所有步驟"""
-        print("\n⚡ 生產模式：自動執行所有步驟")
+        print("\n⚡ 生產模式：自動執行三步驟流程")
         
         # Step 1: 生成腳本
         script_dir = self.run_step1_script(config_path)
@@ -163,14 +211,21 @@ class PodcastWorkflow:
             print("❌ 工作流程終止：腳本生成失敗")
             return False
         
-        # Step 2: 生成音頻（自動繼續）
-        audio_dir = self.run_step2_audio(script_dir)
+        # Step 2: 標籤嵌入（自動繼續）
+        tagged_script_dir = self.run_step2_embed_tags(script_dir, config_path)
+        if not tagged_script_dir:
+            print("❌ 工作流程終止：標籤嵌入失敗")
+            return False
+        
+        # Step 3: 生成音頻（自動繼續）
+        audio_dir = self.run_step3_audio(tagged_script_dir)
         if not audio_dir:
             print("❌ 工作流程終止：音頻生成失敗")
             return False
         
-        print("\n✅ 工作流程完成！")
-        print(f"📁 腳本位置: {script_dir}")
+        print("\n✅ 三步驟工作流程完成！")
+        print(f"📁 原始腳本: {script_dir}")
+        print(f"📁 帶標籤腳本: {tagged_script_dir}")
         print(f"📁 音頻位置: {audio_dir}")
         return True
     
@@ -183,16 +238,25 @@ class PodcastWorkflow:
             steps = []
             print("請選擇要執行的步驟：")
             print("1. 生成腳本")
-            print("2. 生成音頻（需要已有腳本）")
-            print("3. 兩者都執行")
+            print("2. 標籤嵌入（需要已有腳本）")
+            print("3. 生成音頻（需要已有腳本）")
+            print("4. 完整流程（腳本 → 標籤 → 音頻）")
+            print("5. 腳本 + 標籤")
+            print("6. 標籤 + 音頻")
             
-            choice = input("選擇 (1/2/3): ").strip()
+            choice = input("選擇 (1-6): ").strip()
             if choice == '1':
                 steps = ['script']
             elif choice == '2':
-                steps = ['audio']
+                steps = ['tags']
             elif choice == '3':
-                steps = ['script', 'audio']
+                steps = ['audio']
+            elif choice == '4':
+                steps = ['script', 'tags', 'audio']
+            elif choice == '5':
+                steps = ['script', 'tags']
+            elif choice == '6':
+                steps = ['tags', 'audio']
             else:
                 print("❌ 無效選擇")
                 return False
@@ -204,17 +268,32 @@ class PodcastWorkflow:
                 print("❌ 腳本生成失敗")
                 return False
         
+        if 'tags' in steps:
+            if not script_dir:
+                # 需要指定腳本目錄
+                print("請提供腳本目錄路徑：")
+                script_dir = input("腳本路徑: ").strip()
+                if not Path(script_dir).exists():
+                    print("❌ 腳本目錄不存在")
+                    return False
+            
+            tagged_script_dir = self.run_step2_embed_tags(script_dir, config_path)
+            if not tagged_script_dir:
+                print("❌ 標籤嵌入失敗")
+                return False
+            # 更新 script_dir 為帶標籤的版本，供音頻生成使用
+            script_dir = tagged_script_dir
+        
         if 'audio' in steps:
             if not script_dir:
                 # 需要指定腳本目錄
-                if not script_dir:
-                    print("請提供腳本目錄路徑：")
-                    script_dir = input("腳本路徑: ").strip()
-                    if not Path(script_dir).exists():
-                        print("❌ 腳本目錄不存在")
-                        return False
+                print("請提供腳本目錄路徑：")
+                script_dir = input("腳本路徑: ").strip()
+                if not Path(script_dir).exists():
+                    print("❌ 腳本目錄不存在")
+                    return False
             
-            audio_dir = self.run_step2_audio(script_dir)
+            audio_dir = self.run_step3_audio(script_dir)
             if not audio_dir:
                 print("❌ 音頻生成失敗")
                 return False
@@ -249,7 +328,7 @@ def main():
     parser.add_argument('--auto-confirm', action='store_true',
                        help='自動確認所有步驟（開發模式）')
     parser.add_argument('--steps', nargs='+', 
-                       choices=['script', 'audio'],
+                       choices=['script', 'tags', 'audio'],
                        help='自訂模式要執行的步驟')
     parser.add_argument('--script-dir', help='已有腳本的目錄（用於單獨生成音頻）')
     

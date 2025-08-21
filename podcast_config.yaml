@@ -88,6 +88,14 @@ level_configs:
       methods: ["paraphrasing", "analogies", "examples", "questions"]
       pattern: "immediate_reinforce"  # 概念出現後立即強化
     
+    # 標籤嵌入策略配置
+    tag_embedding:
+      density: "low"                    # 標籤使用密度
+      emotion_range: ["gentle", "curious", "supportive", "happy", "thoughtful"]
+      pause_frequency: "high"           # 暫停頻率
+      prosody_usage: "minimal"          # 語調變化使用程度
+      primary_style: "[conversational]"
+    
   A2:  # 好奇者 - 耐心建立理解
     style_name: "好奇者"
     conversation_style: ["curious", "patient", "supportive", "encouraging", "friendly"]
@@ -138,6 +146,14 @@ level_configs:
       frequency: "moderate_high"  # 中高頻重複
       methods: ["rephrasing", "examples", "building_understanding"]
       pattern: "gradual_reinforce"  # 漸進式強化理解
+    
+    # 標籤嵌入策略配置
+    tag_embedding:
+      density: "low_moderate"           # 標籤使用密度
+      emotion_range: ["curious", "interested", "thoughtful", "supportive", "gentle"]
+      pause_frequency: "moderate_high"  # 暫停頻率
+      prosody_usage: "selective"        # 語調變化使用程度
+      primary_style: "[conversational]"
     
   B1:  # 討論者 - 平衡探索
     style_name: "討論者"
@@ -192,6 +208,14 @@ level_configs:
       methods: ["reframing", "multiple_angles", "connecting_ideas"]
       pattern: "strategic_reinforce"  # 戰略性強化關鍵概念
     
+    # 標籤嵌入策略配置
+    tag_embedding:
+      density: "moderate"               # 標籤使用密度
+      emotion_range: ["thoughtful", "engaged", "analytical", "curious", "balanced"]
+      pause_frequency: "moderate"       # 暫停頻率
+      prosody_usage: "selective"        # 語調變化使用程度
+      primary_style: "[conversational]"
+    
   B2:  # 分析者 - 深入對話
     style_name: "分析者"
     conversation_style: ["analytical", "sophisticated", "insightful", "professional", "articulate"]
@@ -244,6 +268,14 @@ level_configs:
       methods: ["nuanced_reframing", "strategic_emphasis", "analytical_reinforcement"]
       pattern: "insight_driven"  # 洞察驅動的重述
     
+    # 標籤嵌入策略配置
+    tag_embedding:
+      density: "moderate_high"          # 標籤使用密度
+      emotion_range: ["analytical", "thoughtful", "professional", "insightful", "confident"]
+      pause_frequency: "strategic"      # 暫停頻率
+      prosody_usage: "moderate"         # 語調變化使用程度
+      primary_style: "[professional]"
+    
   C1:  # 智者 - 快速洞察
     style_name: "智者"
     conversation_style: ["sharp", "analytical", "sophisticated", "direct", "insightful"]
@@ -295,6 +327,14 @@ level_configs:
       methods: ["sharp_reinforcement", "systemic_connection", "insight_crystallization"]
       pattern: "breakthrough_moments"  # 突破性洞察時刻
     
+    # 標籤嵌入策略配置
+    tag_embedding:
+      density: "high"                   # 標籤使用密度
+      emotion_range: ["analytical", "insightful", "professional", "sharp", "sophisticated"]
+      pause_frequency: "strategic"      # 暫停頻率
+      prosody_usage: "rich"             # 語調變化使用程度
+      primary_style: "[professional]"
+    
   C2:  # 大師 - 專精論述
     style_name: "大師"
     conversation_style: ["expert", "sophisticated", "nuanced", "authoritative", "complex"]
@@ -345,6 +385,14 @@ level_configs:
       frequency: "rare_crystallized"  # 稀有的結晶化重述
       methods: ["masterful_synthesis", "paradigm_reinforcement", "authoritative_confirmation"]
       pattern: "mastery_moments"  # 大師級洞察時刻
+    
+    # 標籤嵌入策略配置
+    tag_embedding:
+      density: "high"                   # 標籤使用密度
+      emotion_range: ["analytical", "sophisticated", "authoritative", "insightful", "professional", "expert"]
+      pause_frequency: "strategic"      # 暫停頻率
+      prosody_usage: "rich"             # 語調變化使用程度
+      primary_style: "[professional]"
 
 # ┌─────────────────────────────────────────────────────────────────────────┐
 # │                    長度自動配置 (Length Auto-Configuration)                 │
@@ -377,6 +425,33 @@ length_configs:
     min_chunk_size: 1000
     time_range: "16-45 分鐘"
     approach: "全面探究，專業深度"
+
+# ┌─────────────────────────────────────────────────────────────────────────┐
+# │                       標籤嵌入配置 (Tag Embedding Configuration)              │
+# └─────────────────────────────────────────────────────────────────────────┘
+tag_embedding:
+  enabled: true
+  llm_model: "gemini-2.0-flash-exp"  # LLM 模型用於標籤嵌入
+  
+  # LLM 模型參數配置
+  model_parameters:
+    temperature: 0.5              # 創造性控制 (0.0-1.0, 越低越一致)
+    top_p: 0.8                   # 核心採樣 (0.0-1.0, 控制詞彙多樣性)
+    top_k: 40                    # 候選詞數量限制
+    max_output_tokens: 8192      # 最大輸出 token 數
+    
+  # 內容處理參數
+  content_processing:
+    chunk_size: 4000             # 長腳本分段處理大小 (字符數)
+    overlap_size: 200            # 分段重疊大小 (保持上下文)
+    retry_attempts: 3            # API 失敗重試次數
+    fallback_enabled: true       # 失敗時是否降級為原始腳本
+    
+  # 標籤驗證參數
+  tag_validation:
+    max_tags_per_100_words: 15   # 標籤密度上限控制
+    remove_invalid_tags: true    # 移除無效標籤
+    fix_format_errors: true      # 自動修正格式錯誤
 
 # ┌─────────────────────────────────────────────────────────────────────────┐
 # │                          技術設定 (Technical Settings)                      │

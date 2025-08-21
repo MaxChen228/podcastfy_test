@@ -46,24 +46,51 @@ def generate_audio_from_script(script_dir: str):
     
     script_dir = Path(script_dir)
     
-    # 讀取腳本
-    script_file = script_dir / "podcast_script.txt"
-    if not script_file.exists():
-        print(f"❌ 找不到腳本檔案: {script_file}")
+    # 讀取腳本（優先使用帶標籤版本）
+    tagged_script_file = script_dir / "podcast_script_tagged.txt"
+    original_script_file = script_dir / "podcast_script.txt"
+    
+    # 確定使用哪個腳本文件
+    if tagged_script_file.exists():
+        script_file = tagged_script_file
+        script_type = "tagged"
+        print("🏷️ 使用帶標籤腳本")
+    elif original_script_file.exists():
+        script_file = original_script_file  
+        script_type = "original"
+        print("📝 使用原始腳本")
+    else:
+        print(f"❌ 找不到腳本檔案在: {script_dir}")
         return None
     
     with open(script_file, 'r', encoding='utf-8') as f:
         script_content = f.read()
     
-    # 讀取元數據
+    # 讀取元數據（優先使用標籤元數據）
+    tag_metadata_file = script_dir / "tag_metadata.json"
     metadata_file = script_dir / "metadata.json"
-    if metadata_file.exists():
+    
+    metadata = {}
+    if tag_metadata_file.exists():
+        with open(tag_metadata_file, 'r', encoding='utf-8') as f:
+            metadata = json.load(f)
+        print(f"📝 腳本資訊 (帶標籤):")
+    elif metadata_file.exists():
         with open(metadata_file, 'r', encoding='utf-8') as f:
             metadata = json.load(f)
         print(f"📝 腳本資訊:")
+    
+    if metadata:
+        print(f"   - 腳本類型: {script_type}")
         print(f"   - 字數: {metadata.get('actual_words', 'N/A')} 字")
         print(f"   - 播客長度: {metadata.get('podcast_length', 'N/A')} ({metadata.get('time_range', 'N/A')})")
         print(f"   - 英語等級: {metadata.get('english_level', 'N/A')}")
+        
+        # 如果是帶標籤腳本，顯示標籤統計
+        if script_type == "tagged" and 'tag_embedding' in metadata:
+            tag_stats = metadata['tag_embedding'].get('statistics', {})
+            print(f"   - 標籤數量: {tag_stats.get('total_tags', 'N/A')}")
+            print(f"   - 標籤密度: 每100字 {tag_stats.get('tags_per_100_words', 'N/A')} 個")
     
     # 載入配置文件取得所有設定
     config = load_config()
@@ -100,8 +127,15 @@ def generate_audio_from_script(script_dir: str):
     print(f"   - 語速控制: {pace_instruction}")
     print("-" * 60)
     
-    # 準備 TTS 提示（整合語速控制）
-    tts_prompt = f"""Say this conversation between Host and Expert {pace_instruction} with {style_instructions} tone:
+    # 準備 TTS 提示（根據腳本類型調整）
+    if script_type == "tagged":
+        # 帶標籤腳本的提示
+        tts_prompt = f"""Read this conversation naturally, interpreting all the emotion tags and SSML markup provided. Speak {pace_instruction} with {style_instructions} tone, and follow all the embedded tags for emotions, pauses, and prosody:
+
+{script_content}"""
+    else:
+        # 原始腳本的提示  
+        tts_prompt = f"""Say this conversation between Host and Expert {pace_instruction} with {style_instructions} tone:
 
 {script_content}"""
     
@@ -159,10 +193,12 @@ def generate_audio_from_script(script_dir: str):
         script_copy.write_text(script_content, encoding='utf-8')
         
         # 更新元數據
-        if metadata_file.exists():
+        if metadata:
             metadata['audio_generated'] = timestamp
             metadata['audio_file'] = str(audio_file)
             metadata['audio_size_kb'] = len(audio_data) / 1024
+            metadata['script_type'] = script_type
+            metadata['script_file_used'] = str(script_file)
             metadata['voices'] = {
                 'host': host_voice,
                 'expert': expert_voice
