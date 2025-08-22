@@ -19,75 +19,125 @@ echo "GEMINI_API_KEY=你的_API_KEY" > .env
 編輯 `podcast_config.yaml`：
 ```yaml
 input:
-  source: "你的文章.txt"  # 或 URL、PDF、YouTube 連結
-  type: "auto"            # 自動檢測類型
+  sources:                  # 支援多資料來源
+    - "你的文章.txt"        # 本地文件
+    - "https://example.com" # 網頁 URL
+    - "youtube_url"         # YouTube 影片
+  type: "multi"             # multi/auto/single
 
 basic:
-  english_level: "B2"     # A1-C2
-  target_minutes: 3       # 目標長度（分鐘）
+  english_level: "A1"       # A1(探索者)-C2(大師)
+  podcast_length: "medium"  # short/medium/long/extra-long
 ```
 
 ### 4. 生成播客
 
 #### 🔧 開發模式（推薦）
-每步確認，可隨時中斷：
+三步驟分離，每步確認：
 ```bash
 python podcast_workflow.py --mode dev
 ```
 
 #### ⚡ 生產模式
-一鍵完成所有步驟：
+一鍵完成三步驟流程：
 ```bash
 python podcast_workflow.py --mode prod
+```
+
+#### 🎯 自訂模式
+選擇性執行特定步驟：
+```bash
+# 僅生成腳本
+python podcast_workflow.py --mode custom --steps script
+
+# 僅標籤嵌入（需要已有腳本）
+python podcast_workflow.py --mode custom --steps tags --script-dir ./output/scripts/script_xxx
+
+# 完整三步驟
+python podcast_workflow.py --mode custom --steps script tags audio
 ```
 
 ## 📁 專案結構
 
 ```
 podcastfy_test/
-├── 📝 核心腳本
-│   ├── generate_script.py          # 生成腳本
-│   ├── generate_audio.py           # 生成音頻
+├── 📝 核心腳本（三步驟工作流程）
+│   ├── generate_script.py          # Step 1: 生成腳本
+│   ├── embed_tags.py               # Step 2: LLM智能標籤嵌入
+│   ├── generate_audio.py           # Step 3: 生成音頻
 │   └── podcast_workflow.py         # 工作流控制器
 │
 ├── ⚙️ 配置
-│   ├── podcast_config.yaml         # 主配置文件
+│   ├── podcast_config.yaml         # 主配置文件（含標籤嵌入配置）
 │   └── .env                        # API Keys（私密）
 │
 ├── 📂 輸出
 │   └── output/
-│       ├── scripts/                # 生成的腳本
-│       └── audio/                  # 生成的音頻
+│       ├── scripts/                # Step 1: 原始腳本
+│       ├── tagged_scripts/         # Step 2: 帶標籤腳本
+│       └── audio/                  # Step 3: 最終音頻
 │
 └── 🗃️ 其他
     ├── test_api.py                 # API 連線測試
+    ├── LLM標籤嵌入系統實施計劃.md   # 技術實施文檔
+    ├── gemini tts 標籤.md          # 標籤系統完整指南
     └── archive/                    # 封存的舊檔案
+```
 
+## 🎯 三步驟工作流程
+
+### Step 1: 腳本生成 📝
+```bash
+# 使用 Podcastfy + Gemini API 生成自然對話腳本
+python generate_script.py
+# 或通過工作流程
+python podcast_workflow.py --mode custom --steps script
+```
+
+### Step 2: LLM 智能標籤嵌入 🏷️
+```bash
+# 使用 LLM 分析內容，智能嵌入 SSML 和情感標籤
+python embed_tags.py <script_directory>
+# 或通過工作流程
+python podcast_workflow.py --mode custom --steps tags --script-dir <directory>
+```
+
+### Step 3: 音頻生成 🎵
+```bash
+# 使用 Gemini Multi-Speaker TTS 生成最終音頻
+python generate_audio.py <tagged_script_directory>
+# 或通過工作流程
+python podcast_workflow.py --mode custom --steps audio --script-dir <directory>
 ```
 
 ## 🎯 使用場景
 
 ### 場景1：開發調試
 ```bash
-# 生成腳本，檢查內容
+# 三步驟分離，逐步檢查和調整
 python podcast_workflow.py --mode dev
 
-# 不滿意？調整配置重新生成
+# 不滿意腳本？調整配置重新生成
 vim podcast_config.yaml
-python podcast_workflow.py --mode dev
+python podcast_workflow.py --mode custom --steps script
+
+# 標籤效果不好？重新嵌入
+python podcast_workflow.py --mode custom --steps tags --script-dir <directory>
 ```
 
 ### 場景2：批量生產
 ```bash
-# 確定流程後，自動執行
+# 確定流程後，自動執行三步驟
 python podcast_workflow.py --mode prod --auto-confirm
 ```
 
 ### 場景3：單獨重做某步驟
 ```bash
-# 只重新生成音頻（保留腳本）
-python podcast_workflow.py --mode custom --steps audio \
-  --script-dir ./output/scripts/script_20250820_143057
+# 只重新嵌入標籤
+python podcast_workflow.py --mode custom --steps tags --script-dir ./output/scripts/script_xxx
+
+# 只重新生成音頻（使用帶標籤腳本）
+python podcast_workflow.py --mode custom --steps audio --script-dir ./output/tagged_scripts/tagged_xxx
 ```
 
 ## 🎨 配置說明
@@ -148,19 +198,51 @@ advanced:
   min_chunk_size: 600    # 最小塊大小
 ```
 
+## 🆕 LLM 智能標籤嵌入系統
+
+### 核心特色
+- **智能分析**：LLM 自動分析對話情境和情緒
+- **等級適配**：根據 A1-C2 英語等級自動調整標籤策略
+- **豐富標籤**：支援 50+ 種情感和語音效果標籤
+- **品質提升**：顯著改善 TTS 音頻的自然度和表現力
+
+### 配置標籤嵌入
+```yaml
+tag_embedding:
+  enabled: true                    # 開啟標籤嵌入功能
+  models:
+    analysis_model: "gemini-2.5-flash"  # 快速分析模型
+    tagging_model: "gemini-2.5-pro"     # 精細標記模型
+```
+
+### 等級特定策略
+- **A1-A2**: 溫和情感 + 充分暫停，適合初學者
+- **B1-B2**: 平衡標籤使用，自然對話節奏  
+- **C1-C2**: 豐富表達 + 專業語調控制
+
 ## 📝 開發筆記
 
-- 使用拆分架構便於調試和節省 API 成本
-- 腳本生成使用 Podcastfy + Gemini API
-- 音頻生成使用 Gemini Multi-Speaker TTS
-- 所有輸出保存在 `output/` 目錄
+- **三步驟架構**：腳本生成 → 標籤嵌入 → 音頻生成
+- **腳本生成**：使用 Podcastfy + Gemini API
+- **標籤嵌入**：使用 LLM 智能分析和標記
+- **音頻生成**：使用 Gemini Multi-Speaker TTS
+- **模組化設計**：每步可獨立執行，便於調試和成本控制
 
 ## ⚠️ 注意事項
 
-1. **API 成本**: 音頻生成會消耗 API 配額，建議先在開發模式確認腳本
-2. **檔案大小**: PDF 和影片可能需要較長處理時間
-3. **語言支援**: 目前主要支援英語內容
+1. **API 成本**: 標籤嵌入和音頻生成會消耗 API 配額，建議使用開發模式逐步確認
+2. **標籤功能**: 預設關閉標籤嵌入，需在 `podcast_config.yaml` 中設定 `tag_embedding.enabled: true`
+3. **檔案大小**: PDF 和影片可能需要較長處理時間
+4. **語言支援**: 目前主要支援英語內容，標籤系統針對英語優化
 
 ---
 
-💡 **提示**: 第一次使用建議用 `test_api.py` 測試連線，然後用開發模式熟悉流程。
+💡 **提示**: 第一次使用建議閱讀 `快速開始指南.md` 了解完整流程，用 `test_api.py` 測試連線，然後用開發模式熟悉三步驟工作流程。
+
+## 📚 相關文檔
+
+- 📖 **[快速開始指南.md](快速開始指南.md)** - 完整三步驟使用教程
+- ⚙️ **[configSetting.md](configSetting.md)** - 所有配置參數詳解
+- 🏷️ **[gemini tts 標籤.md](gemini tts 標籤.md)** - 標籤系統完整指南  
+- 📋 **[LLM標籤嵌入系統實施計劃.md](LLM標籤嵌入系統實施計劃.md)** - 技術實施文檔
+- 🔧 **[Gemini Multi-Speaker TTS 完整使用文檔.md](Gemini Multi-Speaker TTS 完整使用文檔.md)** - TTS API 詳細說明

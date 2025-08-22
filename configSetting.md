@@ -911,3 +911,122 @@ memory_optimization: "balanced"
 
 
 這份完整參考涵蓋了Podcastfy所有可用的配置選項，讓你能夠精確控制播客的生成過程。
+
+## 🏷️ **LLM 智能標籤嵌入配置 (LLM Tag Embedding Configuration)**
+
+### 核心配置
+
+```yaml
+tag_embedding:
+  enabled: false                        # 是否啟用標籤嵌入功能 (預設關閉)
+  models:
+    analysis_model: "gemini-2.5-flash"   # 內容分析模型 (快速分析)
+    tagging_model: "gemini-2.5-pro"      # 標籤嵌入模型 (精細標記)
+```
+
+### 模型參數配置
+
+```yaml
+  model_parameters:
+    temperature: 0.5                     # 創造性控制 (0.0-1.0)
+    top_p: 0.8                          # 核心採樣控制 (0.0-1.0)
+    top_k: 40                           # 候選詞數量限制
+    max_output_tokens: 8192             # 最大輸出 token 數
+```
+
+### 內容處理參數
+
+```yaml
+  content_processing:
+    chunk_size: 500                     # 分段處理大小 (字數)
+    overlap_size: 100                   # 分段重疊大小 (字數) 
+    retry_attempts: 3                   # API 失敗重試次數
+    fallback_enabled: true              # 失敗時降級為原始腳本
+```
+
+### 標籤驗證參數
+
+```yaml
+  tag_validation:
+    max_tags_per_100_words: 25          # 標籤密度上限 (每100字標籤數)
+    remove_invalid_tags: true           # 自動移除無效標籤
+    fix_format_errors: true             # 自動修正格式錯誤
+```
+
+### 等級特定標籤策略
+
+每個英語等級在 `level_configs` 中都有專屬的 `tag_embedding` 配置：
+
+#### A1/A2 等級（初學者策略）
+```yaml
+    tag_embedding:
+      density: "moderate"               # 適度標籤密度
+      emotion_range: ["gentle", "curious", "supportive", "happy", "thoughtful"]
+      pause_frequency: "high"           # 高頻率暫停，便於理解
+      prosody_usage: "selective"        # 選擇性語調變化
+      primary_style: "[conversational]" # 對話式風格
+```
+
+#### B1/B2 等級（中級策略）  
+```yaml
+    tag_embedding:
+      density: "high"                   # 較高標籤密度
+      emotion_range: ["thoughtful", "engaged", "analytical", "curious", "balanced"]
+      pause_frequency: "moderate"       # 適度暫停頻率
+      prosody_usage: "rich"             # 豐富語調變化
+      primary_style: "[conversational]" # 保持對話感
+```
+
+#### C1/C2 等級（高級策略）
+```yaml  
+    tag_embedding:
+      density: "very_high"              # 最高標籤密度
+      emotion_range: ["analytical", "sophisticated", "authoritative", "insightful"]
+      pause_frequency: "strategic"      # 戰略性暫停位置
+      prosody_usage: "very_rich"        # 極豐富語調控制
+      primary_style: "[professional]"   # 專業風格
+```
+
+### 支援的標籤類型
+
+#### 情感標籤
+- **正面情感**: `[happy]`, `[excited]`, `[confident]`, `[delighted]`
+- **思考情感**: `[thoughtful]`, `[curious]`, `[analytical]`, `[insightful]`  
+- **複雜情感**: `[empathetic]`, `[sincere]`, `[sophisticated]`, `[authoritative]`
+
+#### 停頓控制
+- **時間暫停**: `[PAUSE=1s]`, `[PAUSE=2s]`, `[PAUSE=500ms]`
+- **描述性暫停**: `[brief pause]`, `[long pause]`, `[dramatic pause]`
+
+#### 語音效果
+- **笑聲系列**: `[laughing]`, `[chuckling]`, `[amused]`
+- **語調風格**: `[conversational]`, `[professional]`, `[storytelling]`
+- **強度控制**: `[gentle]`, `[dramatic]`, `[emphasized]`, `[whisper]`
+
+### 使用建議
+
+1. **初次使用**: 設置 `enabled: true` 開啟功能
+2. **模型選擇**: Pro 模型品質較佳，Flash 模型速度較快
+3. **成本控制**: 標籤嵌入會增加 API 使用量，建議先小批次測試
+4. **品質檢查**: 可使用開發模式逐步檢查標籤效果
+5. **失敗降級**: `fallback_enabled: true` 確保系統穩定性
+
+### 標籤效果範例
+
+**原始腳本**:
+```
+<Person1> Welcome to our discussion about artificial intelligence.
+<Person2> Thanks for having me. This is such an important topic.
+```
+
+**A1等級標籤嵌入**:
+```
+<Person1> [gentle] [conversational] Welcome to our discussion about artificial intelligence. [PAUSE=2s]
+<Person2> [happy] [supportive] Thanks for having me. [PAUSE=1s] This is such an important topic. [thoughtful]
+```
+
+**C2等級標籤嵌入**:
+```
+<Person1> [professional] [authoritative] Welcome to our discussion about artificial intelligence. <prosody rate="medium"> A field that's reshaping our world </prosody>
+<Person2> [analytical] [sophisticated] Thanks for having me. [brief pause] This is such an important topic [insightful] that demands our careful consideration.
+```

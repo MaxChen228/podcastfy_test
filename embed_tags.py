@@ -33,24 +33,32 @@ class TagEmbeddingEngine:
         self.level_config = config['level_configs'][english_level]
         self.tag_config = self.level_config.get('tag_embedding', {})
         
-        # 獲取標籤嵌入配置
+        # Get model configurations
         self.tag_embedding_config = config.get('tag_embedding', {})
-        self.llm_model = self.tag_embedding_config.get('llm_model', 'gemini-2.0-flash-exp')
+        models_config = self.tag_embedding_config.get('models', {})
         
-        # 獲取模型參數
+        # Fallback for backward compatibility
+        fallback_model = self.tag_embedding_config.get('llm_model', 'gemini-1.5-flash-latest')
+        
+        self.analysis_model_name = models_config.get('analysis_model', fallback_model)
+        self.tagging_model_name = models_config.get('tagging_model', fallback_model)
+        
+        # Get model parameters
         self.model_params = self.tag_embedding_config.get('model_parameters', {})
         self.content_processing = self.tag_embedding_config.get('content_processing', {})
         self.tag_validation = self.tag_embedding_config.get('tag_validation', {})
         
-        # 配置 Gemini API
+        # Configure Gemini API
         api_key = os.getenv('GEMINI_API_KEY')
         if not api_key:
-            raise ValueError("GEMINI_API_KEY 環境變量未設置")
+            raise ValueError("GEMINI_API_KEY environment variable not set")
         
         genai.configure(api_key=api_key)
         
-        # 初始化模型與生成配置
-        self.model = genai.GenerativeModel(self.llm_model)
+        # Initialize two separate models
+        self.analysis_model = genai.GenerativeModel(self.analysis_model_name)
+        self.tagging_model = genai.GenerativeModel(self.tagging_model_name)
+        
         self.generation_config = genai.types.GenerationConfig(
             temperature=self.model_params.get('temperature', 0.3),
             top_p=self.model_params.get('top_p', 0.8),
@@ -62,29 +70,29 @@ class TagEmbeddingEngine:
         """分析對話內容，識別情境和情緒"""
         
         analysis_prompt = f"""
-        請分析以下播客對話腳本的內容和情境：
+        Please analyze the content and context of the following podcast dialogue script:
 
         {script_content}
 
-        請回答：
-        1. 對話的主要情緒氛圍（例如：正面、中性、嚴肅等）
-        2. 對話節奏（例如：緩慢、中等、快速）
-        3. 主要討論主題的複雜度（例如：基礎、中等、高級）
-        4. 建議的主要情感標籤（3-5個）
-        5. 建議的停頓位置類型（例如：段落間長停頓、句子間短停頓）
+        Please answer the following:
+        1. The primary mood of the dialogue (e.g., positive, neutral, serious).
+        2. The pace of the dialogue (e.g., slow, moderate, fast).
+        3. The complexity of the main topic (e.g., basic, intermediate, advanced).
+        4. Suggested primary emotion tags (3-5 tags).
+        5. Suggested types of pauses (e.g., long pauses between paragraphs, short pauses between sentences).
 
-        請以 JSON 格式回答：
+        Please respond in JSON format:
         {{
-            "mood": "正面/中性/嚴肅",
-            "pace": "緩慢/中等/快速", 
-            "complexity": "基礎/中等/高級",
+            "mood": "positive/neutral/serious",
+            "pace": "slow/moderate/fast", 
+            "complexity": "basic/intermediate/advanced",
             "suggested_emotions": ["emotion1", "emotion2", "emotion3"],
-            "pause_strategy": "描述停頓策略"
+            "pause_strategy": "A description of the pause strategy"
         }}
         """
         
         try:
-            response = self.model.generate_content(
+            response = self.analysis_model.generate_content(
                 analysis_prompt,
                 generation_config=self.generation_config
             )
@@ -205,7 +213,7 @@ Tagged Script:
         
         print("🤖 LLM 執行標籤嵌入...")
         try:
-            response = self.model.generate_content(
+            response = self.tagging_model.generate_content(
                 prompt,
                 generation_config=self.generation_config
             )
@@ -378,7 +386,10 @@ def embed_tags_with_llm(script_dir: str, config_path: str = "./podcast_config.ya
         enhanced_metadata.update({
             "tag_embedding": {
                 "enabled": True,
-                "llm_model": engine.llm_model,
+                "models": {
+                    "analysis": engine.analysis_model_name,
+                    "tagging": engine.tagging_model_name
+                },
                 "english_level": english_level,
                 "tag_strategy": engine.tag_config,
                 "statistics": tag_stats,

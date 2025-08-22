@@ -14,11 +14,11 @@ basic:
   # B2: 分析者 - 深入對話，專業詞彙
   # C1: 智者 - 快速洞察，直接核心
   # C2: 大師 - 專精論述，複雜關聯
-  english_level: "A2"
+  english_level: "A1"
   
   # 播客長度
   # short: 3-5分鐘, medium: 6-10分鐘, long: 11-15分鐘, extra-long: 16-45分鐘
-  podcast_length: "long"
+  podcast_length: "extra-long"
 
 # ┌─────────────────────────────────────────────────────────────────────────┐
 # │                            輸入來源 (Input Sources)                        │
@@ -26,10 +26,12 @@ basic:
 input:
   # 多資料來源支援
   sources:
-    - "https://medium.com/westenberg/i-deleted-my-second-brain-b7a65bce3717"
-    - "https://medium.com/write-a-catalyst/i-self-hosted-openais-gpt-3-5-turbo-to-build-my-own-ai-second-brain-8e1852b93228"
-    - "https://medium.com/pen-with-paper/this-8-second-brain-hack-will-end-your-procrastination-forever-d640256a1023"
-    - "https://medium.com/@xception08/support-your-gut-its-your-second-brain-cba7b5abf256"
+    - "https://www.popsci.com/gear/best-of-ces-2025/"
+    - "https://www.popsci.com/gear/best-of-ces-2025/"
+    - "https://www.popsci.com/gear/best-of-ces-2025/"
+    - "https://www.wgsn.com/en/blogs/discover-top-trends-2025-and-beyond"
+    - "https://medium.com/@stylemysoul/lifestyle-trends-gaining-momentum-in-2025-268df7a15fab"
+    - "https://www.techradar.com/tech-events/the-11-most-exciting-tech-trends-of-2025-according-to-ces-2025"
   type: "multi"
 
 # ┌─────────────────────────────────────────────────────────────────────────┐
@@ -40,7 +42,7 @@ level_configs:
   A1:  # 探索者 - 緩慢共同發現
     style_name: "探索者"
     conversation_style: ["gentle", "wondering", "patient", "supportive", "exploratory"]
-    voices: { host_voice: "Kore", expert_voice: "Puck" }  # 溫和女+活潑男
+    voices: { host_voice: "Zephyr", expert_voice: "Puck" }
     pace: "slow"
     knowledge_density: "very_low"
     interaction_level: "high"
@@ -336,7 +338,7 @@ level_configs:
       primary_style: "[professional]"
     
   C2:  # 大師 - 專精論述
-    style_name: "大師"
+    style_name: "master"
     conversation_style: ["expert", "sophisticated", "nuanced", "authoritative", "complex"]
     voices: { host_voice: "Aoede", expert_voice: "Fenrir" }  # 優雅女+專業男
     pace: "fast"
@@ -430,8 +432,10 @@ length_configs:
 # │                       標籤嵌入配置 (Tag Embedding Configuration)              │
 # └─────────────────────────────────────────────────────────────────────────┘
 tag_embedding:
-  enabled: true
-  llm_model: "gemini-2.5-flash"  # LLM 模型用於標籤嵌入
+  enabled: false
+  models:
+    analysis_model: "gemini-2.5-flash"  # 用於快速分析
+    tagging_model: "gemini-2.5-pro"   # 用於精細標記
   
   # LLM 模型參數配置
   model_parameters:
