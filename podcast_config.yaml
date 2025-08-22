@@ -7,13 +7,13 @@
 # │                        用戶選擇 (User Selection)                           │
 # └─────────────────────────────────────────────────────────────────────────┘
 basic:
-  # 英語等級（唯一的風格選擇器）
-  # A1: 探索者 - 緩慢共同發現，大量背景
-  # A2: 好奇者 - 耐心建立理解，熟悉例子
-  # B1: 討論者 - 平衡探索，混合複雜度
-  # B2: 分析者 - 深入對話，專業詞彙
-  # C1: 智者 - 快速洞察，直接核心
-  # C2: 大師 - 專精論述，複雜關聯
+  # 英語等級（教學導向漸進式設計）
+  # A1: 英語老師 - 明確教學，語言重點優先
+  # A2: 語言引導者 - 自然指導，實用表達教學  
+  # B1: 對話導師 - 內容討論中穿插語言教導
+  # B2: 分析者 - 深入對話，偶爾語言提點
+  # C1: 智者 - 快速洞察，專注內容分析
+  # C2: 大師 - 專精論述，純內容導向
   english_level: "A1"
   
   # 播客長度
@@ -39,29 +39,44 @@ input:
 # └─────────────────────────────────────────────────────────────────────────┘
 # 🤖 系統會根據選擇的 english_level 自動應用以下配置
 level_configs:
-  A1:  # 探索者 - 緩慢共同發現
-    style_name: "探索者"
-    conversation_style: ["gentle", "wondering", "patient", "supportive", "exploratory"]
+  A1:  # 英語老師 - 明確教學導向
+    style_name: "英語老師"
+    conversation_style: ["teaching", "patient", "encouraging", "clear", "instructive"]
     voices: { host_voice: "Zephyr", expert_voice: "Puck" }
     pace: "slow"
     knowledge_density: "very_low"
     interaction_level: "high"
     creativity: 0.4
-    techniques: ["simple analogies", "concrete examples", "gentle questioning", "patient exploration", "encouraging discoveries"]
+    techniques: ["explicit teaching", "language pattern explanation", "vocabulary building", "grammar highlighting", "pronunciation guidance"]
     dialogue_structure: [
-      "Friendly Hello & What We're Curious About",
-      "First Look & Simple Impressions", 
-      "Understanding Step by Step",
-      "Connecting to What We Know",
-      "Discovering Together",
-      "What We Learned Today"
+      "Welcome & Learning Goals",
+      "Key Vocabulary Introduction",
+      "Content with Language Teaching", 
+      "Grammar & Usage Explanations",
+      "Practice & Reinforcement",
+      "Summary & Language Review"
     ]
     conversation_markers: [
-      "Hmm, I wonder what this means...",
-      "Oh, that's like when...",
-      "Wait, can you help me understand...",
-      "That makes me think of..."
+      "Let me teach you this useful phrase...",
+      "Notice how we say... instead of...",
+      "This is a common way to express...",
+      "Pay attention to this grammar pattern...",
+      "Let's practice this vocabulary..."
     ]
+    
+    # 語言教學元素
+    language_teaching_elements:
+      teaching_style: "explicit_instruction"        # 明確指導式教學
+      focus_areas: ["vocabulary", "grammar", "pronunciation", "common_phrases"]
+      teaching_markers: [
+        "In English, we often say...",
+        "A useful phrase here is...",
+        "Notice the grammar pattern...",
+        "Let me explain this expression...",
+        "This is pronounced as..."
+      ]
+      error_correction: "gentle_modeling"           # 溫和示範式糾錯
+      repetition_for_learning: "high"              # 高頻率學習重複
     # 專業結構化配置
     engagement_factors: ["questions", "examples", "simple analogies", "encouraging discoveries"]
     interaction_markers: ["gentle transitions", "patient pauses", "supportive acknowledgments"]
@@ -98,29 +113,44 @@ level_configs:
       prosody_usage: "selective"        # 語調變化使用程度
       primary_style: "[conversational]"
     
-  A2:  # 好奇者 - 耐心建立理解
-    style_name: "好奇者"
-    conversation_style: ["curious", "patient", "supportive", "encouraging", "friendly"]
+  A2:  # 語言引導者 - 自然語言指導
+    style_name: "語言引導者"
+    conversation_style: ["guiding", "supportive", "natural", "encouraging", "helpful"]
     voices: { host_voice: "Kore", expert_voice: "Charon" }  # 溫和女+沈穩男
     pace: "slow"
     knowledge_density: "low"
     interaction_level: "high"
     creativity: 0.4
-    techniques: ["relatable examples", "step-by-step thinking", "familiar analogies", "clarifying questions", "building understanding slowly"]
+    techniques: ["natural language guidance", "contextual teaching", "usage examples", "friendly corrections", "encouraging practice"]
     dialogue_structure: [
-      "Warm Welcome & Topic Introduction",
-      "First Thoughts & Initial Questions",
-      "Building Understanding Together", 
-      "Real-World Connections",
-      "Putting Pieces Together",
-      "Reflecting on Our Journey"
+      "Friendly Introduction & Language Focus",
+      "Content with Natural Language Tips",
+      "Usage Examples & Applications", 
+      "Common Expressions & Phrases",
+      "Practice Through Discussion",
+      "Language Summary & Encouragement"
     ]
     conversation_markers: [
-      "I'm starting to see...",
-      "That reminds me of...",
-      "So if I understand correctly...",
-      "Oh, that helps me picture it!"
+      "Here's a useful expression you can use...",
+      "Native speakers often say...",
+      "A better way to express this would be...",
+      "This reminds me of another common phrase...",
+      "You'll often hear people say..."
     ]
+    
+    # 語言教學元素
+    language_teaching_elements:
+      teaching_style: "natural_guidance"           # 自然引導式教學
+      focus_areas: ["common_expressions", "natural_usage", "everyday_phrases", "conversation_skills"]
+      teaching_markers: [
+        "Here's how native speakers say it...",
+        "A natural way to express this is...",
+        "You might also hear...",
+        "This phrase is very common...",
+        "People usually say..."
+      ]
+      error_correction: "indirect_modeling"        # 間接示範式糾錯
+      repetition_for_learning: "moderate_high"     # 中高頻率學習重複
     # 專業結構化配置
     engagement_factors: ["questions", "examples", "familiar analogies", "step-by-step explanations"]
     interaction_markers: ["clarifying questions", "understanding checks", "encouraging nods"]
@@ -157,29 +187,44 @@ level_configs:
       prosody_usage: "moderate"         # 語調變化使用程度
       primary_style: "[conversational]"
     
-  B1:  # 討論者 - 平衡探索
-    style_name: "討論者"
-    conversation_style: ["thoughtful", "balanced", "conversational", "analytical", "engaging"]
+  B1:  # 對話導師 - 內容中穿插語言教導
+    style_name: "對話導師"
+    conversation_style: ["conversational", "helpful", "natural", "educational", "engaging"]
     voices: { host_voice: "Aoede", expert_voice: "Puck" }  # 優雅女+活潑男
     pace: "moderate"
     knowledge_density: "medium"
     interaction_level: "medium"
     creativity: 0.5
-    techniques: ["mixed complexity examples", "comparative thinking", "moderate abstractions", "exploratory questions", "balanced analysis"]
+    techniques: ["natural teaching integration", "contextual language tips", "discussion with guidance", "alternative expressions", "subtle corrections"]
     dialogue_structure: [
       "Natural Opening & Topic Setting",
-      "Initial Analysis & Key Points",
-      "Deeper Exploration & Examples",
-      "Different Angles & Perspectives", 
-      "Broader Implications",
-      "Personal Insights & Takeaways"
+      "Discussion with Language Insights",
+      "Exploring Ideas & Expressions",
+      "Alternative Ways to Say Things", 
+      "Deeper Conversation & Language Use",
+      "Takeaways & Useful Phrases"
     ]
     conversation_markers: [
-      "What's interesting here is...",
-      "I think there are different ways to look at this...",
-      "Building on what you said...",
-      "That raises an interesting point..."
+      "That's a great way to put it - we often say...",
+      "Speaking of which, there's a useful expression...",
+      "You know, native speakers might phrase this as...",
+      "This reminds me of a common idiom...",
+      "Here's another way to express the same idea..."
     ]
+    
+    # 語言教學元素
+    language_teaching_elements:
+      teaching_style: "natural_integration"        # 自然整合式教學
+      focus_areas: ["alternative_expressions", "idiomatic_usage", "natural_phrasing", "conversation_flow"]
+      teaching_markers: [
+        "That's a great way to put it...",
+        "Another way to say this would be...",
+        "Native speakers often use...",
+        "There's an interesting expression...",
+        "You might also hear..."
+      ]
+      error_correction: "conversational_recast"    # 對話式重塑糾錯
+      repetition_for_learning: "moderate"          # 適度學習重複
     # 專業結構化配置
     engagement_factors: ["questions", "examples", "analogies", "comparative analysis", "multiple perspectives"]
     interaction_markers: ["thoughtful transitions", "analytical bridges", "perspective shifts"]
@@ -239,7 +284,9 @@ level_configs:
       "The really interesting aspect here is...",
       "What this suggests to me is...",
       "There's a deeper pattern here...",
-      "The implications extend to..."
+      "The implications extend to...",
+      "By the way, we often describe this as...",
+      "Incidentally, there's a precise term for this..."
     ]
     # 專業結構化配置
     engagement_factors: ["analytical questions", "nuanced examples", "strategic implications", "abstract concepts"]
@@ -427,6 +474,26 @@ length_configs:
     min_chunk_size: 1000
     time_range: "16-45 分鐘"
     approach: "全面探究，專業深度"
+
+# ┌─────────────────────────────────────────────────────────────────────────┐
+# │                      語言教學配置 (Language Teaching Configuration)              │
+# └─────────────────────────────────────────────────────────────────────────┘
+language_teaching:
+  enabled: true                        # 是否啟用語言教學功能
+  teaching_spectrum:                   # 教學光譜設計
+    A1: "explicit_teaching"            # 明確教學 (80% 語言 + 20% 內容)
+    A2: "guided_learning"              # 引導學習 (60% 語言 + 40% 內容)  
+    B1: "integrated_teaching"          # 整合教學 (40% 語言 + 60% 內容)
+    B2: "occasional_tips"              # 偶爾提點 (20% 語言 + 80% 內容)
+    C1: "content_focused"              # 內容聚焦 (5% 語言 + 95% 內容)
+    C2: "pure_content"                 # 純內容導向 (0% 語言 + 100% 內容)
+  
+  common_teaching_elements:            # 通用教學元素
+    vocabulary_explanation: true       # 詞彙解釋
+    grammar_highlighting: true         # 語法突出
+    pronunciation_tips: true           # 發音提示
+    usage_examples: true               # 使用範例
+    alternative_expressions: true      # 替代表達
 
 # ┌─────────────────────────────────────────────────────────────────────────┐
 # │                       標籤嵌入配置 (Tag Embedding Configuration)              │

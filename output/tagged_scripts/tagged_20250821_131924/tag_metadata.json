@@ -1,0 +1,63 @@
+{
+  "timestamp": "20250821_105724",
+  "input_type": "multi",
+  "english_level": "A1",
+  "podcast_length": "medium",
+  "time_range": "6-10 \u5206\u9418",
+  "target_words": 2000,
+  "actual_words": 1394,
+  "accuracy": "69.7%",
+  "script_file": "output/scripts/script_20250821_105724/podcast_script.txt",
+  "original_file": "data/transcripts/transcript_9723e22ca35246a5ad76b8337411ad51.txt",
+  "input_sources": [
+    "https://medium.com/write-a-catalyst/you-are-fired-now-80458d77205a",
+    "https://medium.com/@huonglanchu/managing-technical-debt-in-the-age-of-vibe-coding-1ceafd97b0a2",
+    "https://medium.com/entrepreneur-s-handbook/lets-talk-about-what-vibe-coding-is-really-for-984bd7d19497",
+    "https://medium.com/entrepreneur-s-handbook/should-you-be-vibe-coding-c56b5f0708a1"
+  ],
+  "source_count": 4,
+  "source_breakdown": {
+    "urls": 4,
+    "youtube_urls": 0,
+    "pdf_files": 0,
+    "text_files": 0,
+    "direct_texts": 0
+  },
+  "tag_embedding": {
+    "enabled": true,
+    "llm_model": "gemini-2.5-flash",
+    "english_level": "A1",
+    "tag_strategy": {
+      "density": "moderate",
+      "emotion_range": [
+        "gentle",
+        "curious",
+        "supportive",
+        "happy",
+        "thoughtful",
+        "excited",
+        "surprised",
+        "warm",
+        "delighted",
+        "interested"
+      ],
+      "pause_frequency": "high",
+      "prosody_usage": "selective",
+      "primary_style": "[conversational]"
+    },
+    "statistics": {
+      "total_tags": 0,
+      "emotion_tags": 0,
+      "pause_tags": 0,
+      "prosody_tags": 0,
+      "style_tags": 0,
+      "original_words": 1394,
+      "tag_density": "0.000",
+      "tags_per_100_words": "0.0"
+    },
+    "timestamp": "20250821_131924"
+  },
+  "tagged_script_file": "output/tagged_scripts/tagged_20250821_131924/podcast_script_tagged.txt",
+  "original_script_backup": "output/tagged_scripts/tagged_20250821_131924/original_script.txt",
+  "original_script_dir": "./output/scripts/script_20250821_105724"
+}

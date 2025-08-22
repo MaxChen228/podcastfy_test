@@ -1,0 +1,63 @@
+{
+  "timestamp": "20250821_134507",
+  "input_type": "multi",
+  "english_level": "A2",
+  "podcast_length": "long",
+  "time_range": "11-15 \u5206\u9418",
+  "target_words": 3300,
+  "actual_words": 1505,
+  "accuracy": "45.6%",
+  "script_file": "output/scripts/script_20250821_134507/podcast_script.txt",
+  "original_file": "data/transcripts/transcript_ed0a618cb8934afaa3bf890c5127997b.txt",
+  "input_sources": [
+    "https://medium.com/westenberg/i-deleted-my-second-brain-b7a65bce3717",
+    "https://medium.com/write-a-catalyst/i-self-hosted-openais-gpt-3-5-turbo-to-build-my-own-ai-second-brain-8e1852b93228",
+    "https://medium.com/pen-with-paper/this-8-second-brain-hack-will-end-your-procrastination-forever-d640256a1023",
+    "https://medium.com/@xception08/support-your-gut-its-your-second-brain-cba7b5abf256"
+  ],
+  "source_count": 4,
+  "source_breakdown": {
+    "urls": 4,
+    "youtube_urls": 0,
+    "pdf_files": 0,
+    "text_files": 0,
+    "direct_texts": 0
+  },
+  "tag_embedding": {
+    "enabled": true,
+    "llm_model": "gemini-2.5-flash",
+    "english_level": "A2",
+    "tag_strategy": {
+      "density": "moderate",
+      "emotion_range": [
+        "curious",
+        "interested",
+        "thoughtful",
+        "supportive",
+        "gentle",
+        "empathetic",
+        "sincere",
+        "amused",
+        "confident",
+        "engaged"
+      ],
+      "pause_frequency": "moderate_high",
+      "prosody_usage": "moderate",
+      "primary_style": "[conversational]"
+    },
+    "statistics": {
+      "total_tags": 92,
+      "emotion_tags": 76,
+      "pause_tags": 3,
+      "prosody_tags": 0,
+      "style_tags": 13,
+      "original_words": 1505,
+      "tag_density": "0.061",
+      "tags_per_100_words": "6.1"
+    },
+    "timestamp": "20250821_140711"
+  },
+  "tagged_script_file": "output/tagged_scripts/tagged_20250821_140711/podcast_script_tagged.txt",
+  "original_script_backup": "output/tagged_scripts/tagged_20250821_140711/original_script.txt",
+  "original_script_dir": "./output/scripts/script_20250821_134507"
+}

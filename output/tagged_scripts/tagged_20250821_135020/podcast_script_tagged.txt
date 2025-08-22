@@ -1,0 +1,2 @@
+<Person1> [conversational] [curious] Welcome to Natural Conversations - 好奇者! [PAUSE=1s] Today, we're diving into a really fascinating concept: the 'second brain,' but from some incredibly diverse angles. [PAUSE=2s]
+</Person1><Person2> [conversational] [interested] Oh, I'm so ready for this

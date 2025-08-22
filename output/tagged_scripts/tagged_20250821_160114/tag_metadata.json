@@ -1,0 +1,64 @@
+{
+  "timestamp": "20250821_154607",
+  "input_type": "multi",
+  "english_level": "C2",
+  "podcast_length": "short",
+  "time_range": "3-5 \u5206\u9418",
+  "target_words": 950,
+  "actual_words": 930,
+  "accuracy": "97.9%",
+  "script_file": "output/scripts/script_20250821_154607/podcast_script.txt",
+  "original_file": "data/transcripts/transcript_b3162767a304472fb06a8859c0458546.txt",
+  "input_sources": [
+    "https://medium.com/gitconnected/embedded-system-design-principles-30dcc1d546ed"
+  ],
+  "source_count": 1,
+  "source_breakdown": {
+    "urls": 1,
+    "youtube_urls": 0,
+    "pdf_files": 0,
+    "text_files": 0,
+    "direct_texts": 0
+  },
+  "tag_embedding": {
+    "enabled": true,
+    "models": {
+      "analysis": "gemini-2.5-flash",
+      "tagging": "gemini-2.5-pro"
+    },
+    "english_level": "C2",
+    "tag_strategy": {
+      "density": "very_high",
+      "emotion_range": [
+        "analytical",
+        "sophisticated",
+        "authoritative",
+        "insightful",
+        "professional",
+        "expert",
+        "masterful",
+        "nuanced",
+        "strategic",
+        "commanding",
+        "precise"
+      ],
+      "pause_frequency": "strategic",
+      "prosody_usage": "very_rich",
+      "primary_style": "[professional]"
+    },
+    "statistics": {
+      "total_tags": 66,
+      "emotion_tags": 15,
+      "pause_tags": 45,
+      "prosody_tags": 0,
+      "style_tags": 6,
+      "original_words": 930,
+      "tag_density": "0.071",
+      "tags_per_100_words": "7.1"
+    },
+    "timestamp": "20250821_160114"
+  },
+  "tagged_script_file": "output/tagged_scripts/tagged_20250821_160114/podcast_script_tagged.txt",
+  "original_script_backup": "output/tagged_scripts/tagged_20250821_160114/original_script.txt",
+  "original_script_dir": "./output/scripts/script_20250821_154607"
+}

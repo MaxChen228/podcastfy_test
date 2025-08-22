@@ -1,0 +1,65 @@
+{
+  "timestamp": "20250821_162109",
+  "input_type": "multi",
+  "english_level": "A1",
+  "podcast_length": "short",
+  "time_range": "3-5 \u5206\u9418",
+  "target_words": 950,
+  "actual_words": 1210,
+  "accuracy": "127.4%",
+  "script_file": "output/scripts/script_20250821_162109/podcast_script.txt",
+  "original_file": "data/transcripts/transcript_9dd0c576bd2143618348e9aa1406bb3d.txt",
+  "input_sources": [
+    "https://medium.com/macoclock/7-new-apps-that-make-your-iphone-and-your-life-better-12ec1686a620",
+    "https://medium.com/macoclock/6-iphone-productivity-apps-thatll-instantly-make-you-more-organized-eb4c63ebc72a",
+    "https://medium.com/macoclock/8-apps-to-use-instead-of-doomscrolling-on-your-iphone-e62d8ed32616"
+  ],
+  "source_count": 3,
+  "source_breakdown": {
+    "urls": 3,
+    "youtube_urls": 0,
+    "pdf_files": 0,
+    "text_files": 0,
+    "direct_texts": 0
+  },
+  "tag_embedding": {
+    "enabled": true,
+    "models": {
+      "analysis": "gemini-2.5-flash",
+      "tagging": "gemini-2.5-pro"
+    },
+    "english_level": "A1",
+    "tag_strategy": {
+      "density": "moderate",
+      "emotion_range": [
+        "gentle",
+        "curious",
+        "supportive",
+        "happy",
+        "thoughtful",
+        "excited",
+        "surprised",
+        "warm",
+        "delighted",
+        "interested"
+      ],
+      "pause_frequency": "high",
+      "prosody_usage": "selective",
+      "primary_style": "[conversational]"
+    },
+    "statistics": {
+      "total_tags": 57,
+      "emotion_tags": 27,
+      "pause_tags": 30,
+      "prosody_tags": 0,
+      "style_tags": 0,
+      "original_words": 1210,
+      "tag_density": "0.047",
+      "tags_per_100_words": "4.7"
+    },
+    "timestamp": "20250821_162342"
+  },
+  "tagged_script_file": "output/tagged_scripts/tagged_20250821_162342/podcast_script_tagged.txt",
+  "original_script_backup": "output/tagged_scripts/tagged_20250821_162342/original_script.txt",
+  "original_script_dir": "output/scripts/script_20250821_162109"
+}

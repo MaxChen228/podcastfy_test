@@ -912,6 +912,104 @@ memory_optimization: "balanced"
 
 這份完整參考涵蓋了Podcastfy所有可用的配置選項，讓你能夠精確控制播客的生成過程。
 
+## 🎓 **語言教學配置 (Language Teaching Configuration)**
+
+### 核心理念
+全新的教學導向等級設計，讓每個等級都有明確的語言學習目標：
+
+```yaml
+language_teaching:
+  enabled: true                        # 啟用語言教學功能
+  teaching_spectrum:                   # 教學光譜設計
+    A1: "explicit_teaching"            # 明確教學 (80% 語言 + 20% 內容)
+    A2: "guided_learning"              # 引導學習 (60% 語言 + 40% 內容)  
+    B1: "integrated_teaching"          # 整合教學 (40% 語言 + 60% 內容)
+    B2: "occasional_tips"              # 偶爾提點 (20% 語言 + 80% 內容)
+    C1: "content_focused"              # 內容聚焦 (5% 語言 + 95% 內容)
+    C2: "pure_content"                 # 純內容導向 (0% 語言 + 100% 內容)
+```
+
+### 等級特定語言教學配置
+
+#### A1 英語老師模式
+```yaml
+    language_teaching_elements:
+      teaching_style: "explicit_instruction"        # 明確指導式教學
+      focus_areas: ["vocabulary", "grammar", "pronunciation", "common_phrases"]
+      teaching_markers: [
+        "In English, we often say...",
+        "A useful phrase here is...",
+        "Notice the grammar pattern...",
+        "Let me explain this expression...",
+        "This is pronounced as..."
+      ]
+      error_correction: "gentle_modeling"           # 溫和示範式糾錯
+      repetition_for_learning: "high"              # 高頻率學習重複
+```
+
+#### A2 語言引導者模式
+```yaml  
+    language_teaching_elements:
+      teaching_style: "natural_guidance"           # 自然引導式教學
+      focus_areas: ["common_expressions", "natural_usage", "everyday_phrases", "conversation_skills"]
+      teaching_markers: [
+        "Here's how native speakers say it...",
+        "A natural way to express this is...",
+        "You might also hear...",
+        "This phrase is very common...",
+        "People usually say..."
+      ]
+      error_correction: "indirect_modeling"        # 間接示範式糾錯
+      repetition_for_learning: "moderate_high"     # 中高頻率學習重複
+```
+
+#### B1 對話導師模式
+```yaml
+    language_teaching_elements:
+      teaching_style: "natural_integration"        # 自然整合式教學
+      focus_areas: ["alternative_expressions", "idiomatic_usage", "natural_phrasing", "conversation_flow"]
+      teaching_markers: [
+        "That's a great way to put it...",
+        "Another way to say this would be...",
+        "Native speakers often use...",
+        "There's an interesting expression...",
+        "You might also hear..."
+      ]
+      error_correction: "conversational_recast"    # 對話式重塑糾錯
+      repetition_for_learning: "moderate"          # 適度學習重複
+```
+
+### 語言教學效果範例
+
+**A1 等級 - 明確教學導向**:
+```
+Host: Welcome to today's lesson! Let me teach you this useful phrase: "to get the hang of something." 
+      This means to become skillful at doing something. Notice how we say "get the hang of" - 
+      it's a very common English expression.
+
+Guest: That's a great phrase to learn! In English, we often say "I'm getting the hang of it" 
+       when we're improving at something. Let me give you another example...
+```
+
+**B1 等級 - 自然整合教學**:
+```
+Host: That's a great way to put it - we often say "it's a game-changer" when something 
+      creates a significant impact.
+
+Guest: Exactly! And speaking of which, there's a useful expression - "to turn the tide" - 
+       which means to change the direction of something. Native speakers use this phrase 
+       quite often in business contexts.
+```
+
+**C2 等級 - 純內容導向**:
+```
+Host: The fundamental dynamics at play reveal a sophisticated interplay between 
+      technological advancement and societal adaptation.
+
+Guest: What's particularly significant is the multi-layered implications this creates 
+       for future policy frameworks and regulatory approaches.
+```
+
 ## 🏷️ **LLM 智能標籤嵌入配置 (LLM Tag Embedding Configuration)**
 
 ### 核心配置
