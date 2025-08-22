@@ -43,6 +43,9 @@ level_configs:
     interaction_level: "high"
     creativity: 0.4
     techniques: ["explicit teaching", "language pattern explanation", "vocabulary building", "grammar highlighting", "pronunciation guidance"]
+    # 主客角色明確分工
+    roles_person1: "Host - Concept Breaker & English Teacher"
+    roles_person2: "Expert - Content Specialist & Knowledge Provider"
     dialogue_structure: [
       "Welcome & Learning Goals",
       "Key Vocabulary Introduction",
@@ -117,6 +120,9 @@ level_configs:
     interaction_level: "high"
     creativity: 0.4
     techniques: ["natural language guidance", "contextual teaching", "usage examples", "friendly corrections", "encouraging practice"]
+    # 主客角色明確分工
+    roles_person1: "Host - Friendly Guide & Language Mentor"
+    roles_person2: "Expert - Patient Teacher & Content Explainer"
     dialogue_structure: [
       "Friendly Introduction & Language Focus",
       "Content with Natural Language Tips",
@@ -191,6 +197,9 @@ level_configs:
     interaction_level: "medium"
     creativity: 0.5
     techniques: ["natural teaching integration", "contextual language tips", "discussion with guidance", "alternative expressions", "subtle corrections"]
+    # 主客角色明確分工
+    roles_person1: "Host - Conversational Coach & Concept Explorer"
+    roles_person2: "Expert - Knowledgeable Discussant & Detail Provider"
     dialogue_structure: [
       "Natural Opening & Topic Setting",
       "Discussion with Language Insights",
@@ -267,6 +276,9 @@ level_configs:
     interaction_level: "medium"
     creativity: 0.6
     techniques: ["nuanced examples", "analytical thinking", "abstract concepts", "probing questions", "strategic connections"]
+    # 主客角色明確分工
+    roles_person1: "Host - Analytical Moderator & Concept Synthesizer"  
+    roles_person2: "Expert - Domain Specialist & Insightful Commentator"
     dialogue_structure: [
       "Opening Analysis & Core Focus",
       "Key Insights & Critical Points",
@@ -329,6 +341,9 @@ level_configs:
     interaction_level: "low"
     creativity: 0.7
     techniques: ["sharp analysis", "sophisticated connections", "implicit assumptions", "strategic implications", "systemic thinking"]
+    # 主客角色明確分工
+    roles_person1: "Host - Strategic Facilitator & Connection Maker"
+    roles_person2: "Expert - Authority & Deep Analysis Provider"
     dialogue_structure: [
       "Immediate Context & Core Issues",
       "Critical Analysis & Key Insights", 
@@ -388,6 +403,9 @@ level_configs:
     interaction_level: "very_low"
     creativity: 0.8
     techniques: ["expert discourse", "subtle implications", "technical precision", "complex interdependencies", "multi-layered analysis"]
+    # 主客角色明確分工
+    roles_person1: "Host - Master Curator & Intellectual Navigator"
+    roles_person2: "Expert - Subject Authority & Specialized Scholar"
     dialogue_structure: [
       "Expert Opening & Immediate Analysis",
       "Deep Technical & Conceptual Exploration",
@@ -443,14 +461,14 @@ level_configs:
 # └─────────────────────────────────────────────────────────────────────────┘
 length_configs:
   short:
-    word_count: 950
+    word_count: 800
     max_num_chunks: 5
-    min_chunk_size: 650
+    min_chunk_size: 600
     time_range: "3-5 分鐘"
     approach: "快速概覽，重點突出"
     
   medium:
-    word_count: 2000
+    word_count: 1800
     max_num_chunks: 8
     min_chunk_size: 700
     time_range: "6-10 分鐘"

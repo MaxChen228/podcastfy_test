@@ -150,9 +150,9 @@ def generate_script_only(config_path: str = "./podcast_config.yaml"):
         # 對話風格（來自等級配置）
         "conversation_style": conversation_style,
         
-        # 說話者角色（自然討論者）
-        "roles_person1": "Thoughtful Analyst",
-        "roles_person2": "Engaged Discussant",
+        # 說話者角色（來自等級配置的主客分工）
+        "roles_person1": level_config.get('roles_person1', 'Host - Discussion Leader'),
+        "roles_person2": level_config.get('roles_person2', 'Expert - Content Specialist'),
         
         # 對話結構（來自等級配置）
         "dialogue_structure": level_config['dialogue_structure'],
@@ -164,7 +164,7 @@ def generate_script_only(config_path: str = "./podcast_config.yaml"):
         "creativity": level_config['creativity'],
         
         # 結構化對話指令（專業版本4.0）
-        "custom_instructions": "",
+        "user_instructions": "",
         
         # 保持向後相容
         "roles": ["Host", "Expert"]
@@ -172,7 +172,7 @@ def generate_script_only(config_path: str = "./podcast_config.yaml"):
     
     # 構建詳細的 custom_instructions
     base_instructions = f"""
-    Create a natural, structured conversation between two genuinely curious people exploring this topic.
+    Create a natural, structured conversation between two people with clearly defined roles exploring this topic.
     
     === CONVERSATION PROFILE ===
     LEVEL: {english_level} ({level_config['style_name']})
@@ -180,6 +180,24 @@ def generate_script_only(config_path: str = "./podcast_config.yaml"):
     PACE: {level_config['pace']}
     INTERACTION: {level_config['interaction_level']} interaction
     STRUCTURAL DEPTH: {level_config.get('structural_depth', 'balanced')}
+    
+    === ROLE DEFINITIONS ===
+    Person1 (HOST): {level_config.get('roles_person1', 'Host - Concept Breaker & Discussion Leader')}
+    Person2 (EXPERT): {level_config.get('roles_person2', 'Expert - Content Specialist & Knowledge Provider')}
+    
+    HOST RESPONSIBILITIES:
+    - Opening the show and setting the agenda
+    - Breaking down complex concepts into understandable parts
+    - Asking clarifying questions to help audience understanding
+    - Language teaching (intensity varies by level: A1=heavy, B1=moderate, C1=minimal)
+    - Maintaining conversation flow and pacing
+    
+    EXPERT RESPONSIBILITIES:  
+    - Providing detailed content knowledge and explanations
+    - Answering Host's questions with appropriate depth
+    - Sharing insights and professional perspectives
+    - Supporting Host's concept-breaking with examples and elaboration
+    - Focusing primarily on content accuracy and completeness
     
     === DIALOGUE STRUCTURE ===
     Follow this {len(level_config['dialogue_structure'])}-part structure naturally:
@@ -212,41 +230,95 @@ def generate_script_only(config_path: str = "./podcast_config.yaml"):
     if english_level == 'A1':
         level_specific = """
         
-        === A1 TEACHING FOCUS ===
-        AVOID: Rushing through concepts, using complex terms without explanation, skipping vocabulary help
-        EMBRACE: Clear explanations, vocabulary teaching, helpful language patterns, patient repetition
-        FOCUS: 80% language learning + 20% content discussion - BE A HELPFUL ENGLISH TEACHER
-        MUST INCLUDE: Regular use of "In English, we often say...", "A useful phrase here is...", "Notice the grammar pattern..."
+        === A1 HOST-EXPERT DYNAMIC ===
+        HOST (English Teacher): 
+        - LEAD the conversation with heavy language teaching focus (80%)
+        - Break down every complex word and concept immediately  
+        - Ask EXPERT to pause for vocabulary/grammar explanations
+        - Use teaching markers: "In English, we often say...", "A useful phrase here is...", "Notice the grammar pattern..."
+        - Constantly check understanding: "Do you understand?", "Can you repeat that?"
+        
+        EXPERT (Patient Content Provider):
+        - WAIT for HOST's language teaching moments
+        - Provide simple, clear content explanations when asked
+        - Support HOST's teaching with examples and context
+        - Use basic vocabulary, speak slowly and clearly
+        - Let HOST dominate the conversation rhythm
+        
+        INTERACTION FLOW: HOST asks → EXPERT explains simply → HOST teaches language → HOST asks next question
         """
     elif english_level == 'A2':  
         level_specific = """
         
-        === A2 GUIDANCE FOCUS ===
-        AVOID: Formal teaching structure, complex technical terms, rushed explanations  
-        EMBRACE: Natural language guidance, contextual teaching, usage examples, friendly corrections
-        FOCUS: 60% language learning + 40% content discussion - BE A SUPPORTIVE LANGUAGE GUIDE
-        MUST INCLUDE: "Here's how native speakers say it...", "A natural way to express this is...", "You might also hear..."
+        === A2 HOST-EXPERT DYNAMIC ===
+        HOST (Friendly Language Guide):
+        - GUIDE the conversation with natural language teaching (60%)
+        - Introduce useful phrases and expressions contextually
+        - Ask EXPERT to demonstrate natural language usage
+        - Use guidance markers: "Here's how native speakers say it...", "A natural way to express this is...", "You might also hear..."
+        - Encourage EXPERT to use more natural expressions
+        
+        EXPERT (Patient Teacher):
+        - COLLABORATE with HOST on language demonstrations
+        - Provide content knowledge with clear, natural expressions
+        - Offer alternative ways to say things when prompted by HOST
+        - Use slightly more complex vocabulary with HOST's guidance
+        - Support HOST's teaching with real-world examples
+        
+        INTERACTION FLOW: HOST introduces topic → EXPERT explains → HOST guides language → Both explore together
         """
     elif english_level == 'B1':
         level_specific = """
         
-        === B1 COACHING FOCUS ===
-        AVOID: Pure content focus without language support, missed opportunities for language tips
-        EMBRACE: Natural teaching integration, alternative expressions, conversation with guidance  
-        FOCUS: 40% language learning + 60% content discussion - BE A CONVERSATIONAL LANGUAGE COACH
-        MUST INCLUDE: "That's a great way to put it...", "Another way to say this would be...", "Native speakers often use..."
+        === B1 HOST-EXPERT DYNAMIC ===
+        HOST (Conversational Language Coach):
+        - MODERATE the conversation with integrated language coaching (40%)
+        - Weave in language tips during natural conversation flow
+        - Appreciate EXPERT's language use: "That's a great way to put it..."
+        - Offer alternatives: "Another way to say this would be...", "Native speakers often use..."
+        - Balance content exploration with language guidance
+        
+        EXPERT (Knowledgeable Discussant):
+        - ENGAGE in substantial content discussion with HOST
+        - Use varied vocabulary and expressions naturally
+        - Welcome HOST's language coaching and build on it
+        - Provide detailed explanations and insights
+        - Share the conversation space more equally with HOST
+        
+        INTERACTION FLOW: HOST moderates → EXPERT discusses deeply → HOST coaches language → Both explore implications
         """
     else:  # B2, C1, C2
-        level_specific = """
+        level_specific = f"""
         
-        === CONTENT FOCUS ===
-        AVOID: Forced teaching moments, excessive language focus, interrupting content flow
-        EMBRACE: Genuine curiosity, collaborative exploration, natural discovery, content-first approach
-        FOCUS: Content-driven discussion with minimal language teaching
+        === {english_level} HOST-EXPERT DYNAMIC ===
+        HOST (Professional Moderator):
+        - FACILITATE sophisticated content exploration  
+        - Break down complex concepts for audience understanding
+        - Ask probing questions to deepen analysis
+        - Minimal language focus - only when truly beneficial
+        - Guide conversation toward key insights and implications
+        
+        EXPERT (Domain Authority):
+        - PROVIDE in-depth knowledge and professional insights
+        - Engage in sophisticated analysis and discussion  
+        - Share specialized perspectives and experience
+        - Use technical language appropriately for audience level
+        - Take substantial conversation space for detailed explanations
+        
+        INTERACTION FLOW: HOST facilitates → EXPERT analyzes deeply → HOST synthesizes → EXPERT provides implications
+        FOCUS: Content-driven discussion with sophisticated concept exploration
         """
     
     # 組合完整指令
-    conversation_config["custom_instructions"] = base_instructions + level_specific + f"""
+    conversation_config["user_instructions"] = base_instructions + level_specific + f"""
+    
+    === CONVERSATION GUIDELINES ===
+    - HOST always opens and sets agenda
+    - EXPERT provides knowledge when asked
+    - Both maintain their distinct roles throughout
+    - Language teaching varies by level (A1=heavy, B1=moderate, C1=minimal)
+    - Concept breaking is always HOST's primary job
+    - Content expertise is always EXPERT's primary job
     
     TARGET: {length_config['time_range']} of natural, engaging conversation
     APPROACH: {length_config['approach']}
