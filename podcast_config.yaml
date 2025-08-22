@@ -18,7 +18,7 @@ basic:
   
   # 播客長度
   # short: 3-5分鐘, medium: 6-10分鐘, long: 11-15分鐘, extra-long: 16-45分鐘
-  podcast_length: "extra-long"
+  podcast_length: "short"
 
 # ┌─────────────────────────────────────────────────────────────────────────┐
 # │                            輸入來源 (Input Sources)                        │
@@ -27,11 +27,6 @@ input:
   # 多資料來源支援
   sources:
     - "https://www.popsci.com/gear/best-of-ces-2025/"
-    - "https://www.popsci.com/gear/best-of-ces-2025/"
-    - "https://www.popsci.com/gear/best-of-ces-2025/"
-    - "https://www.wgsn.com/en/blogs/discover-top-trends-2025-and-beyond"
-    - "https://medium.com/@stylemysoul/lifestyle-trends-gaining-momentum-in-2025-268df7a15fab"
-    - "https://www.techradar.com/tech-events/the-11-most-exciting-tech-trends-of-2025-according-to-ces-2025"
   type: "multi"
 
 # ┌─────────────────────────────────────────────────────────────────────────┐
@@ -499,7 +494,7 @@ language_teaching:
 # │                       標籤嵌入配置 (Tag Embedding Configuration)              │
 # └─────────────────────────────────────────────────────────────────────────┘
 tag_embedding:
-  enabled: false
+  enabled: true
   models:
     analysis_model: "gemini-2.5-flash"  # 用於快速分析
     tagging_model: "gemini-2.5-pro"   # 用於精細標記

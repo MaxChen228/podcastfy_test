@@ -18,7 +18,7 @@ build/
 .env.backup*
 
 # 輸出資料夾
-
+output/
 audio/
 scripts/
 data/
@@ -27,6 +27,7 @@ podcast_output/
 
 # 封存資料夾
 archive/
+archived_outputs/
 
 # 測試和暫存
 *.log

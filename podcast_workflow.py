@@ -18,7 +18,7 @@ from typing import Optional, Dict, Any
 
 # 導入拆分版本的功能
 from generate_script import generate_script_only
-from embed_tags import embed_tags_with_llm
+from embed_tags import embed_tags_with_rules
 from generate_audio import generate_audio_from_script
 
 class PodcastWorkflow:
@@ -115,7 +115,7 @@ class PodcastWorkflow:
         
         try:
             # 調用標籤嵌入引擎
-            tagged_script_dir = embed_tags_with_llm(script_dir, config_path)
+            tagged_script_dir = embed_tags_with_rules(script_dir, config_path)
             
             if tagged_script_dir:
                 self.tagged_script_dir = tagged_script_dir

@@ -1,28 +1,29 @@
 #!/usr/bin/env python3
 """
-Step 2: LLM 智能標籤嵌入引擎
-分析腳本內容，根據英語等級配置智能嵌入 SSML 和情感標籤
+Step 2: 經濟高效的規則式標籤嵌入引擎
+使用智能規則檢測停頓點和語音效果，無需 LLM 成本
 """
 
 import os
 import sys
 import json
 import yaml
-import google.generativeai as genai
+import re
 from pathlib import Path
 from datetime import datetime
 from typing import Optional, Dict, Any, List
+from collections import Counter
 from dotenv import load_dotenv
 
 # Load environment variables
 load_dotenv()
 
-class TagEmbeddingEngine:
-    """LLM 驅動的標籤嵌入引擎"""
+class RuleBasedTagEngine:
+    """經濟高效的規則式標籤嵌入引擎"""
     
     def __init__(self, config: Dict[Any, Any], english_level: str):
         """
-        初始化標籤嵌入引擎
+        初始化規則式標籤嵌入引擎
         
         Args:
             config: 播客配置字典
@@ -33,91 +34,182 @@ class TagEmbeddingEngine:
         self.level_config = config['level_configs'][english_level]
         self.tag_config = self.level_config.get('tag_embedding', {})
         
-        # Get model configurations
-        self.tag_embedding_config = config.get('tag_embedding', {})
-        models_config = self.tag_embedding_config.get('models', {})
+        # 初始化規則引擎配置
+        self._init_pause_rules()
+        self._init_voice_effects()
         
-        # Fallback for backward compatibility
-        fallback_model = self.tag_embedding_config.get('llm_model', 'gemini-1.5-flash-latest')
-        
-        self.analysis_model_name = models_config.get('analysis_model', fallback_model)
-        self.tagging_model_name = models_config.get('tagging_model', fallback_model)
-        
-        # Get model parameters
-        self.model_params = self.tag_embedding_config.get('model_parameters', {})
-        self.content_processing = self.tag_embedding_config.get('content_processing', {})
-        self.tag_validation = self.tag_embedding_config.get('tag_validation', {})
-        
-        # Configure Gemini API
-        api_key = os.getenv('GEMINI_API_KEY')
-        if not api_key:
-            raise ValueError("GEMINI_API_KEY environment variable not set")
-        
-        genai.configure(api_key=api_key)
-        
-        # Initialize two separate models
-        self.analysis_model = genai.GenerativeModel(self.analysis_model_name)
-        self.tagging_model = genai.GenerativeModel(self.tagging_model_name)
-        
-        self.generation_config = genai.types.GenerationConfig(
-            temperature=self.model_params.get('temperature', 0.3),
-            top_p=self.model_params.get('top_p', 0.8),
-            top_k=self.model_params.get('top_k', 40),
-            max_output_tokens=self.model_params.get('max_output_tokens', 8192)
-        )
+        print(f"🚀 規則式標籤引擎初始化完成 - 等級: {english_level}")
+    
+    def _init_pause_rules(self):
+        """初始化停頓規則配置"""
+        self.pause_strategies = {
+            'A1': {
+                'density': 0.15,  # 15%的標點符號加停頓 - 大幅降低
+                'pause_mapping': {
+                    '.': '[PAUSE=1.5s]',
+                    '?': '[PAUSE=1.5s]',
+                    '!': '[PAUSE=1s]',
+                    # 移除逗號等小停頓
+                }
+            },
+            'A2': {
+                'density': 0.12,  # 12%
+                'pause_mapping': {
+                    '.': '[PAUSE=1s]',
+                    '?': '[PAUSE=1.2s]',
+                    '!': '[PAUSE=800ms]',
+                }
+            },
+            'B1': {
+                'density': 0.10,  # 10%
+                'pause_mapping': {
+                    '.': '[PAUSE=800ms]',
+                    '?': '[PAUSE=1s]',
+                    '!': '[PAUSE=600ms]',
+                }
+            },
+            'B2': {
+                'density': 0.08,  # 8%
+                'pause_mapping': {
+                    '.': '[PAUSE=600ms]',
+                    '?': '[PAUSE=800ms]',
+                    '!': '[PAUSE=500ms]',
+                }
+            },
+            'C1': {
+                'density': 0.06,  # 6%
+                'pause_mapping': {
+                    '.': '[PAUSE=500ms]',
+                    '?': '[PAUSE=600ms]',
+                    '!': '[PAUSE=400ms]',
+                }
+            },
+            'C2': {
+                'density': 0.05, # 5% - 最少停頓
+                'pause_mapping': {
+                    '.': '[PAUSE=400ms]',
+                    '?': '[PAUSE=500ms]',
+                    '!': '[PAUSE=300ms]',
+                }
+            }
+        }
+    
+    def _init_voice_effects(self):
+        """初始化語音效果檢測規則"""
+        self.voice_effects = {
+            # 笑聲系列
+            'laugh_triggers': {
+                'keywords': ['haha', 'hehe', 'lol', 'funny', 'hilarious', 'joke', 'laugh'],
+                'effects': ['[laughing]', '[chuckling]', '[giggles]']
+            },
+            'amused_triggers': {
+                'keywords': ['amusing', 'witty', 'clever', 'humor'],
+                'effects': ['[amused]', '[chuckling]']
+            },
+            
+            # 情緒效果
+            'sigh_triggers': {
+                'keywords': ['unfortunately', 'sadly', 'however', 'sigh'],
+                'effects': ['[sighing]']
+            },
+            'gasp_triggers': {
+                'keywords': ['suddenly', 'shocking', 'incredible', 'wow', 'amazing'],
+                'effects': ['[gasping]']
+            },
+            
+            # 呼吸音效
+            'thinking_triggers': {
+                'keywords': ['um', 'uh', 'well...', 'let me think'],
+                'effects': ['[breathing]']
+            },
+            'cough_triggers': {
+                'keywords': ['excuse me', 'sorry', 'pardon'],
+                'effects': ['[coughing]']
+            }
+        }
     
     def analyze_dialogue_context(self, script_content: str) -> Dict[str, Any]:
-        """分析對話內容，識別情境和情緒"""
+        """使用規則分析對話內容，識別停頓點和語音效果"""
         
-        analysis_prompt = f"""
-        Please analyze the content and context of the following podcast dialogue script:
-
-        {script_content}
-
-        Please answer the following:
-        1. The primary mood of the dialogue (e.g., positive, neutral, serious).
-        2. The pace of the dialogue (e.g., slow, moderate, fast).
-        3. The complexity of the main topic (e.g., basic, intermediate, advanced).
-        4. Suggested primary emotion tags (3-5 tags).
-        5. Suggested types of pauses (e.g., long pauses between paragraphs, short pauses between sentences).
-
-        Please respond in JSON format:
-        {{
-            "mood": "positive/neutral/serious",
-            "pace": "slow/moderate/fast", 
-            "complexity": "basic/intermediate/advanced",
-            "suggested_emotions": ["emotion1", "emotion2", "emotion3"],
-            "pause_strategy": "A description of the pause strategy"
-        }}
-        """
+        # 基本統計
+        word_count = len(script_content.split())
+        sentence_count = len(re.findall(r'[.!?]', script_content))
         
-        try:
-            response = self.analysis_model.generate_content(
-                analysis_prompt,
-                generation_config=self.generation_config
-            )
-            analysis_text = response.text.strip()
-            
-            # 嘗試解析 JSON
-            if analysis_text.startswith('```json'):
-                analysis_text = analysis_text.split('```json')[1].split('```')[0].strip()
-            elif analysis_text.startswith('```'):
-                analysis_text = analysis_text.split('```')[1].split('```')[0].strip()
-            
-            analysis = json.loads(analysis_text)
-            return analysis
-            
-        except Exception as e:
-            print(f"⚠️ 內容分析失敗，使用預設設定: {e}")
-            return {
-                "mood": "中性",
-                "pace": "中等",
-                "complexity": "中等",
-                "suggested_emotions": ["conversational", "thoughtful", "engaged"],
-                "pause_strategy": "段落間適度停頓"
-            }
+        # 簡單的規則分析
+        analysis = {
+            "word_count": word_count,
+            "sentence_count": sentence_count,
+            "avg_sentence_length": word_count / max(sentence_count, 1),
+            "pause_points": self._identify_pause_points(script_content),
+            "voice_effects": self._identify_voice_effects(script_content)
+        }
+        
+        print(f"📊 內容分析: {word_count}字, {sentence_count}句, 平均{analysis['avg_sentence_length']:.1f}字/句")
+        print(f"⏸️ 檢測到 {len(analysis['pause_points'])}個停頓點")
+        print(f"🎭 檢測到 {len(analysis['voice_effects'])}個語音效果")
+        
+        return analysis
     
-    def generate_tag_embedding_prompt(self, script_content: str, analysis: Dict[str, Any]) -> str:
+    def _identify_pause_points(self, text: str) -> List[Dict[str, Any]]:
+        """識別停頓點"""
+        strategy = self.pause_strategies[self.english_level]
+        pause_points = []
+        
+        # 找到所有標點符號位置
+        for punct, pause_tag in strategy['pause_mapping'].items():
+            positions = [m.start() for m in re.finditer(re.escape(punct), text)]
+            for pos in positions:
+                # 根據密度決定是否新增停頓
+                if len(pause_points) == 0 or pos > pause_points[-1]['position'] + 10:  # 避免太密集
+                    if len(pause_points) / max(len(text.split()), 1) < strategy['density']:
+                        pause_points.append({
+                            'position': pos,
+                            'punctuation': punct,
+                            'pause_tag': pause_tag
+                        })
+        
+        return sorted(pause_points, key=lambda x: x['position'])
+    
+    def _identify_voice_effects(self, text: str) -> List[Dict[str, Any]]:
+        """識別語音效果"""
+        voice_effects = []
+        text_lower = text.lower()
+        
+        for effect_type, config in self.voice_effects.items():
+            for keyword in config['keywords']:
+                if keyword in text_lower:
+                    # 找到關鍵詞的位置
+                    positions = [m.start() for m in re.finditer(re.escape(keyword), text_lower)]
+                    for pos in positions:
+                        # 隨機選擇一個效果
+                        import random
+                        effect = random.choice(config['effects'])
+                        voice_effects.append({
+                            'position': pos,
+                            'keyword': keyword,
+                            'effect': effect,
+                            'type': effect_type
+                        })
+        
+        return sorted(voice_effects, key=lambda x: x['position'])
+    
+    def generate_statistics(self, original_content: str, tagged_content: str) -> Dict[str, Any]:
+        """統計標籤嵌入結果"""
+        
+        # 統計標籤數量
+        pause_count = len(re.findall(r'\[PAUSE=\w+\]', tagged_content))
+        voice_effect_count = len(re.findall(r'\[(?:laughing|chuckling|sighing|gasping|breathing|coughing|sniffing|groaning|giggles|amused|crying|sobbing|panting|yawning)\]', tagged_content))
+        
+        original_words = len(original_content.split())
+        
+        return {
+            'total_tags': pause_count + voice_effect_count,
+            'pause_tags': pause_count,
+            'voice_effect_tags': voice_effect_count,
+            'original_words': original_words,
+            'tag_density': f"{((pause_count + voice_effect_count) / original_words * 100):.1f}%",
+            'tags_per_100_words': f"{(pause_count + voice_effect_count) / original_words * 100:.1f}"
+        }
         """Generates the LLM prompt for tag embedding based on configuration and analysis."""
         
         # Get level-specific tag strategy
@@ -200,41 +292,56 @@ Tagged Script:
         
         return prompt
     
-    def embed_tags_with_llm(self, script_content: str) -> str:
-        """使用 LLM 進行智能標籤嵌入"""
+    def embed_tags_with_rules(self, script_content: str) -> str:
+        """使用規則引擎進行標籤嵌入，無需 LLM 成本"""
         
-        print("🧠 分析對話內容...")
+        print("🚀 分析對話內容...")
         analysis = self.analyze_dialogue_context(script_content)
         
-        print(f"📊 分析結果：{analysis['mood']} 氛圍，{analysis['pace']} 節奏")
+        print("⏸️ 新增停頓標籤...")
+        tagged_content = self._add_pause_tags(script_content, analysis['pause_points'])
         
-        print("🏷️ 生成標籤嵌入提示...")
-        prompt = self.generate_tag_embedding_prompt(script_content, analysis)
+        print("🎭 新增語音效果...")
+        tagged_content = self._add_voice_effects(tagged_content, analysis['voice_effects'])
         
-        print("🤖 LLM 執行標籤嵌入...")
-        try:
-            response = self.tagging_model.generate_content(
-                prompt,
-                generation_config=self.generation_config
-            )
-            tagged_content = response.text.strip()
+        print("✨ 標籤嵌入完成!")
             
-            # 移除可能的 markdown 格式標記
-            if tagged_content.startswith('```'):
-                lines = tagged_content.split('\n')
-                start_idx = 1 if lines[0].startswith('```') else 0
-                end_idx = len(lines)
-                for i in range(len(lines)-1, -1, -1):
-                    if lines[i].strip() == '```':
-                        end_idx = i
-                        break
-                tagged_content = '\n'.join(lines[start_idx:end_idx])
+        return tagged_content
+    
+    def _add_pause_tags(self, content: str, pause_points: List[Dict[str, Any]]) -> str:
+        """在指定位置新增停頓標籤"""
+        result = content
+        
+        # 從後向前處理，避免位置偏移
+        for pause_info in reversed(pause_points):
+            pos = pause_info['position']
+            punct = pause_info['punctuation']
+            pause_tag = pause_info['pause_tag']
             
-            return tagged_content
+            # 在標點符號後加入停頓
+            if pos < len(result) and result[pos] == punct:
+                result = result[:pos+1] + f" {pause_tag}" + result[pos+1:]
+        
+        return result
+    
+    def _add_voice_effects(self, content: str, voice_effects: List[Dict[str, Any]]) -> str:
+        """在關鍵詞附近新增語音效果"""
+        result = content
+        
+        # 從後向前處理，避免位置偏移
+        for effect_info in reversed(voice_effects):
+            pos = effect_info['position']
+            effect = effect_info['effect']
+            keyword = effect_info['keyword']
             
-        except Exception as e:
-            print(f"❌ LLM 標籤嵌入失敗: {e}")
-            return script_content  # 返回原始腳本作為降級方案
+            # 在關鍵詞前加入語音效果
+            if pos < len(result):
+                # 找到關鍵詞的結束位置
+                end_pos = pos + len(keyword)
+                if end_pos <= len(result):
+                    result = result[:pos] + f"{effect} " + result[pos:]
+        
+        return result
     
     def post_process_tags(self, tagged_script: str) -> str:
         """後處理：驗證標籤格式，修正錯誤"""
@@ -302,7 +409,7 @@ def load_config(config_path: str = "./podcast_config.yaml"):
     with open(config_path, 'r', encoding='utf-8') as f:
         return yaml.safe_load(f)
 
-def embed_tags_with_llm(script_dir: str, config_path: str = "./podcast_config.yaml") -> Optional[str]:
+def embed_tags_with_rules(script_dir: str, config_path: str = "./podcast_config.yaml") -> Optional[str]:
     """
     主要功能：為腳本嵌入 LLM 生成的標籤
     
@@ -352,21 +459,19 @@ def embed_tags_with_llm(script_dir: str, config_path: str = "./podcast_config.ya
         print(f"📝 原始腳本: {len(original_script.split())} 字")
         print(f"🎯 等級設定: {english_level}")
         
-        # 初始化標籤嵌入引擎
-        engine = TagEmbeddingEngine(config, english_level)
+        # 初始化規則式標籤引擎
+        engine = RuleBasedTagEngine(config, english_level)
         
-        print(f"🏷️ 標籤策略: {engine.tag_config.get('density', 'moderate')} 密度")
-        print(f"🎭 情感範圍: {', '.join(engine.tag_config.get('emotion_range', ['conversational']))}")
+        print(f"⏸️ 停頓策略: {engine.pause_strategies[english_level]['density']*100:.0f}% 密度")
         
         # 執行標籤嵌入
-        tagged_script = engine.embed_tags_with_llm(original_script)
+        tagged_script = engine.embed_tags_with_rules(original_script)
         
-        # 後處理標籤
-        print("🔧 後處理標籤格式...")
-        final_script = engine.post_process_tags(tagged_script)
+        # 統計結果
+        print("📊 統計標籤結果...")
+        tag_stats = engine.generate_statistics(original_script, tagged_script)
         
-        # 計算統計
-        tag_stats = engine.calculate_tag_statistics(original_script, final_script)
+        final_script = tagged_script
         
         # 創建輸出目錄
         timestamp = datetime.now().strftime("%Y%m%d_%H%M%S")
@@ -386,10 +491,7 @@ def embed_tags_with_llm(script_dir: str, config_path: str = "./podcast_config.ya
         enhanced_metadata.update({
             "tag_embedding": {
                 "enabled": True,
-                "models": {
-                    "analysis": engine.analysis_model_name,
-                    "tagging": engine.tagging_model_name
-                },
+                "engine_type": "rule_based",
                 "english_level": english_level,
                 "tag_strategy": engine.tag_config,
                 "statistics": tag_stats,
@@ -411,11 +513,10 @@ def embed_tags_with_llm(script_dir: str, config_path: str = "./podcast_config.ya
         print(f"📝 帶標籤腳本: {tagged_script_file.name}")
         print(f"📊 標籤統計:")
         print(f"   - 總標籤數: {tag_stats['total_tags']}")
-        print(f"   - 情感標籤: {tag_stats['emotion_tags']}")
         print(f"   - 停頓標籤: {tag_stats['pause_tags']}")
-        print(f"   - 語調標籤: {tag_stats['prosody_tags']}")
-        print(f"   - 風格標籤: {tag_stats['style_tags']}")
-        print(f"   - 標籤密度: 每100字 {tag_stats['tags_per_100_words']} 個標籤")
+        print(f"   - 語音效果: {tag_stats['voice_effect_tags']}")
+        print(f"   - 標籤密度: {tag_stats['tag_density']}")
+        print(f"   - 每100字 {tag_stats['tags_per_100_words']} 個標籤")
         print("=" * 60)
         
         return str(output_dir)
@@ -433,7 +534,7 @@ def main():
     script_dir = sys.argv[1]
     config_path = sys.argv[2] if len(sys.argv) > 2 else "./podcast_config.yaml"
     
-    result = embed_tags_with_llm(script_dir, config_path)
+    result = embed_tags_with_rules(script_dir, config_path)
     if result:
         print(f"\n💡 下一步：執行 python generate_audio.py {result}")
     else:
