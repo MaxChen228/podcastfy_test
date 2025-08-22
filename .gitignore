@@ -18,7 +18,7 @@ build/
 .env.backup*
 
 # 輸出資料夾
-output/
+
 audio/
 scripts/
 data/
