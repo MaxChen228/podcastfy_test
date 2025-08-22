@@ -143,12 +143,12 @@ case $choice in
             ls -la output/tagged_scripts/ | grep "^d" | tail -3
         fi
         echo ""
-        read -p "請輸入完整腳本路徑（例如：./output/tagged_scripts/tagged_20250821_143145）: " script_path
+        read -p "請輸入標籤腳本目錄名稱（例如：tagged_20250821_143145）: " tagged_dir
         
-        if [ -d "$script_path" ]; then
-            python podcast_workflow.py --mode custom --steps audio --script-dir "$script_path"
+        if [ -d "output/tagged_scripts/$tagged_dir" ]; then
+            python podcast_workflow.py --mode custom --steps audio --script-dir "./output/tagged_scripts/$tagged_dir"
         else
-            echo -e "${RED}❌ 目錄不存在：$script_path${NC}"
+            echo -e "${RED}❌ 目錄不存在：output/tagged_scripts/$tagged_dir${NC}"
             exit 1
         fi
         ;;

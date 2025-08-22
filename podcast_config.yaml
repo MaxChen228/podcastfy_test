@@ -469,6 +469,7 @@ length_configs:
     min_chunk_size: 1000
     time_range: "16-45 分鐘"
     approach: "全面探究，專業深度"
+    # ⚡ 自動啟用 longform 分段處理模式，進行多輪 LLM 呼叫
 
 # ┌─────────────────────────────────────────────────────────────────────────┐
 # │                      語言教學配置 (Language Teaching Configuration)              │

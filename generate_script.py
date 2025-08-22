@@ -164,100 +164,103 @@ def generate_script_only(config_path: str = "./podcast_config.yaml"):
         "creativity": level_config['creativity'],
         
         # 結構化對話指令（專業版本4.0）
-        "custom_instructions": f"""
-        Create a natural, structured conversation between two genuinely curious people exploring this topic.
-        
-        === CONVERSATION PROFILE ===
-        LEVEL: {english_level} ({level_config['style_name']})
-        KNOWLEDGE DENSITY: {level_config['knowledge_density']}
-        PACE: {level_config['pace']}
-        INTERACTION: {level_config['interaction_level']} interaction
-        STRUCTURAL DEPTH: {level_config.get('structural_depth', 'balanced')}
-        
-        === DIALOGUE STRUCTURE ===
-        Follow this {len(level_config['dialogue_structure'])}-part structure naturally:
-        {chr(10).join(f'{i+1}. {section}' for i, section in enumerate(level_config['dialogue_structure']))}
-        
-        === ENGAGEMENT FACTORS ===
-        Integrate these elements throughout: {', '.join(level_config.get('engagement_factors', level_config['techniques']))}
-        
-        === CONCEPT PROCESSING STRATEGY ===
-        Explanation depth: {level_config.get('concept_processing', {}).get('explanation_depth', 'balanced')}
-        Breakdown style: {level_config.get('concept_processing', {}).get('breakdown_style', 'natural')}
-        Technical terms: {level_config.get('concept_processing', {}).get('technical_terms', 'contextual')}
-        
-        CONCEPT BREAKDOWN RULES:
-        - Complex concepts: Break down using {level_config.get('concept_processing', {}).get('breakdown_style', 'examples')}
-        - Technical terms: Handle with {level_config.get('concept_processing', {}).get('technical_terms', 'explanation')} approach
-        - Explanation trigger: {level_config.get('vocabulary_adaptation', {}).get('explanation_trigger', 'when_needed')}
-        
-        === VOCABULARY ADAPTATION ===
-        Complexity level: {level_config.get('vocabulary_adaptation', {}).get('complexity_level', 'balanced')}
-        Synonym usage: {level_config.get('vocabulary_adaptation', {}).get('synonym_usage', 'natural')}
-        
-        VOCABULARY GUIDELINES:
-        - Use {level_config.get('vocabulary_adaptation', {}).get('complexity_level', 'appropriate')} vocabulary
-        - When introducing complex terms, provide {level_config.get('vocabulary_adaptation', {}).get('synonym_usage', 'alternatives')}
-        - Explain concepts using familiar language first, then introduce precise terms
-        
-        === REPETITION STRATEGY ===
-        Frequency: {level_config.get('repetition_strategy', {}).get('frequency', 'natural')}
-        Methods: {', '.join(level_config.get('repetition_strategy', {}).get('methods', ['natural repetition']))}
-        Pattern: {level_config.get('repetition_strategy', {}).get('pattern', 'organic')}
-        
-        REPETITION GUIDELINES:
-        - Important concepts should be naturally revisited using: {', '.join(level_config.get('repetition_strategy', {}).get('methods', ['paraphrasing']))}
-        - Follow {level_config.get('repetition_strategy', {}).get('pattern', 'natural')} pattern for reinforcement
-        - Ensure {level_config.get('repetition_strategy', {}).get('frequency', 'appropriate')} repetition without being redundant
-        
-        === TRANSITION GUIDELINES ===
-        Use these natural transition phrases to connect sections:
-        {chr(10).join('- "' + phrase + '"' for phrase in level_config.get('transition_phrases', level_config['conversation_markers']))}
-        
-        === CONTENT PACING ===
-        Content rhythm: {level_config.get('content_pacing', level_config['pace'])} - Allow natural pauses and reflection points between major sections
-        
-        === INTERACTION MARKERS ===
-        Conversation flow: {', '.join(level_config.get('interaction_markers', ['natural flow', 'organic development']))}
-        
-        === CORE PRINCIPLES ===
-        1. Both speakers are genuinely curious and engaged
-        2. Knowledge emerges through natural discussion, not teaching
-        3. Each dialogue section has a clear purpose but flows naturally
-        4. Use authentic reactions and organic idea building
-        5. Maintain {level_config['pace']} pace with {level_config['interaction_level']} interaction
-        6. Apply {level_config['knowledge_density']} knowledge density naturally
-        
-        === NATURAL CONVERSATION MARKERS ===
-        Weave these naturally throughout:
-        {chr(10).join('- "' + marker + '"' for marker in level_config['conversation_markers'])}
-        
-        === SUBTLE LEARNING MOMENTS ===
-        (If naturally occurring):
-        - When someone uses a particularly apt, vivid, or precise expression
-        - Natural appreciation: "That's well put", "Good way to describe it", "That captures it"
-        - Frequency: Maybe once per conversation, or not at all - never force it
-        - Always secondary to content discussion
-        
-        === AVOID ===
-        Teaching language, structured lessons, "let me explain" phrases, forcing vocabulary moments, rigid adherence to structure
-        
-        === EMBRACE ===
-        Genuine curiosity, collaborative exploration, natural discovery, content-first approach, organic flow between sections
-        
-        TARGET: {length_config['time_range']} of natural, engaging conversation
-        APPROACH: {length_config['approach']}
-        """,
+        "custom_instructions": "",
         
         # 保持向後相容
         "roles": ["Host", "Expert"]
     }
+    
+    # 構建詳細的 custom_instructions
+    base_instructions = f"""
+    Create a natural, structured conversation between two genuinely curious people exploring this topic.
+    
+    === CONVERSATION PROFILE ===
+    LEVEL: {english_level} ({level_config['style_name']})
+    KNOWLEDGE DENSITY: {level_config['knowledge_density']}
+    PACE: {level_config['pace']}
+    INTERACTION: {level_config['interaction_level']} interaction
+    STRUCTURAL DEPTH: {level_config.get('structural_depth', 'balanced')}
+    
+    === DIALOGUE STRUCTURE ===
+    Follow this {len(level_config['dialogue_structure'])}-part structure naturally:
+    {chr(10).join(f'{i+1}. {section}' for i, section in enumerate(level_config['dialogue_structure']))}
+    
+    === ENGAGEMENT FACTORS ===
+    Integrate these elements throughout: {', '.join(level_config.get('engagement_factors', level_config['techniques']))}
+    
+    === LANGUAGE TEACHING ELEMENTS ===
+    Teaching Style: {level_config.get('language_teaching_elements', {}).get('teaching_style', 'none')}
+    Focus Areas: {', '.join(level_config.get('language_teaching_elements', {}).get('focus_areas', []))}
+    Teaching Markers: {chr(10).join('- "' + marker + '"' for marker in level_config.get('language_teaching_elements', {}).get('teaching_markers', []))}
+    Error Correction: {level_config.get('language_teaching_elements', {}).get('error_correction', 'none')}
+    Learning Repetition: {level_config.get('language_teaching_elements', {}).get('repetition_for_learning', 'none')}
+    
+    TEACHING INTEGRATION RULES:
+    - {config.get('language_teaching', {}).get('teaching_spectrum', {}).get(english_level, 'content_focused')}
+    - For A1: Include explicit vocabulary explanations using teaching markers
+    - For A1-A2: Actively teach useful phrases and expressions
+    - For B1: Naturally weave in alternative expressions and language tips
+    - For B2+: Minimal language focus, content-driven discussion
+    
+    === NATURAL CONVERSATION MARKERS ===
+    Weave these naturally throughout:
+    {chr(10).join('- "' + marker + '"' for marker in level_config['conversation_markers'])}
+    """
+    
+    # 添加等級專用的 AVOID/EMBRACE 指導
+    level_specific = ""
+    if english_level == 'A1':
+        level_specific = """
+        
+        === A1 TEACHING FOCUS ===
+        AVOID: Rushing through concepts, using complex terms without explanation, skipping vocabulary help
+        EMBRACE: Clear explanations, vocabulary teaching, helpful language patterns, patient repetition
+        FOCUS: 80% language learning + 20% content discussion - BE A HELPFUL ENGLISH TEACHER
+        MUST INCLUDE: Regular use of "In English, we often say...", "A useful phrase here is...", "Notice the grammar pattern..."
+        """
+    elif english_level == 'A2':  
+        level_specific = """
+        
+        === A2 GUIDANCE FOCUS ===
+        AVOID: Formal teaching structure, complex technical terms, rushed explanations  
+        EMBRACE: Natural language guidance, contextual teaching, usage examples, friendly corrections
+        FOCUS: 60% language learning + 40% content discussion - BE A SUPPORTIVE LANGUAGE GUIDE
+        MUST INCLUDE: "Here's how native speakers say it...", "A natural way to express this is...", "You might also hear..."
+        """
+    elif english_level == 'B1':
+        level_specific = """
+        
+        === B1 COACHING FOCUS ===
+        AVOID: Pure content focus without language support, missed opportunities for language tips
+        EMBRACE: Natural teaching integration, alternative expressions, conversation with guidance  
+        FOCUS: 40% language learning + 60% content discussion - BE A CONVERSATIONAL LANGUAGE COACH
+        MUST INCLUDE: "That's a great way to put it...", "Another way to say this would be...", "Native speakers often use..."
+        """
+    else:  # B2, C1, C2
+        level_specific = """
+        
+        === CONTENT FOCUS ===
+        AVOID: Forced teaching moments, excessive language focus, interrupting content flow
+        EMBRACE: Genuine curiosity, collaborative exploration, natural discovery, content-first approach
+        FOCUS: Content-driven discussion with minimal language teaching
+        """
+    
+    # 組合完整指令
+    conversation_config["custom_instructions"] = base_instructions + level_specific + f"""
+    
+    TARGET: {length_config['time_range']} of natural, engaging conversation
+    APPROACH: {length_config['approach']}
+    """
+    
+    # 根據長度設定決定是否啟用 longform 模式
+    use_longform = (podcast_length == "extra-long")
     
     print(f"🎯 Podcastfy 參數:")
     print(f"   - 目標字數: {word_count}")
     print(f"   - 最大輪次: {max_num_chunks}")
     print(f"   - 最小塊大小: {min_chunk_size}")
     print(f"   - 對話風格: {', '.join(conversation_style)}")
+    print(f"   - 長篇模式: {'啟用' if use_longform else '關閉'}")
     
     print("🚀 開始生成腳本...")
     
@@ -301,7 +304,8 @@ def generate_script_only(config_path: str = "./podcast_config.yaml"):
                     llm_model_name=llm_model,
                     api_key_label="GEMINI_API_KEY",
                     conversation_config=conversation_config,
-                    transcript_only=True
+                    transcript_only=True,
+                    longform=use_longform
                 )
             elif all_urls:
                 # 純 URL 模式
@@ -310,7 +314,8 @@ def generate_script_only(config_path: str = "./podcast_config.yaml"):
                     llm_model_name=llm_model,
                     api_key_label="GEMINI_API_KEY",
                     conversation_config=conversation_config,
-                    transcript_only=True
+                    transcript_only=True,
+                    longform=use_longform
                 )
             elif combined_text:
                 # 純文字模式
@@ -319,7 +324,8 @@ def generate_script_only(config_path: str = "./podcast_config.yaml"):
                     llm_model_name=llm_model,
                     api_key_label="GEMINI_API_KEY",
                     conversation_config=conversation_config,
-                    transcript_only=True
+                    transcript_only=True,
+                    longform=use_longform
                 )
             else:
                 raise ValueError("多資料來源模式但未找到有效來源")
@@ -359,7 +365,8 @@ def generate_script_only(config_path: str = "./podcast_config.yaml"):
                     llm_model_name=llm_model,
                     api_key_label="GEMINI_API_KEY",
                     conversation_config=conversation_config,
-                    transcript_only=True  # 只生成腳本
+                    transcript_only=True,  # 只生成腳本
+                    longform=use_longform
                 )
             
             elif input_type == 'url':
@@ -368,7 +375,8 @@ def generate_script_only(config_path: str = "./podcast_config.yaml"):
                     llm_model_name=llm_model,
                     api_key_label="GEMINI_API_KEY",
                     conversation_config=conversation_config,
-                    transcript_only=True
+                    transcript_only=True,
+                    longform=use_longform
                 )
                 
             elif input_type == 'youtube':
@@ -377,7 +385,8 @@ def generate_script_only(config_path: str = "./podcast_config.yaml"):
                     llm_model_name=llm_model,
                     api_key_label="GEMINI_API_KEY",
                     conversation_config=conversation_config,
-                    transcript_only=True
+                    transcript_only=True,
+                    longform=use_longform
                 )
                 
             elif input_type == 'pdf':
@@ -386,7 +395,8 @@ def generate_script_only(config_path: str = "./podcast_config.yaml"):
                     llm_model_name=llm_model,
                     api_key_label="GEMINI_API_KEY",
                     conversation_config=conversation_config,
-                    transcript_only=True
+                    transcript_only=True,
+                    longform=use_longform
                 )
             else:
                 raise ValueError(f"不支援的輸入類型: {input_type}")

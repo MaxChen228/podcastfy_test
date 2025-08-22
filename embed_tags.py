@@ -154,14 +154,16 @@ class RuleBasedTagEngine:
         """識別停頓點"""
         strategy = self.pause_strategies[self.english_level]
         pause_points = []
+        import random
         
         # 找到所有標點符號位置
         for punct, pause_tag in strategy['pause_mapping'].items():
             positions = [m.start() for m in re.finditer(re.escape(punct), text)]
             for pos in positions:
-                # 根據密度決定是否新增停頓
-                if len(pause_points) == 0 or pos > pause_points[-1]['position'] + 10:  # 避免太密集
-                    if len(pause_points) / max(len(text.split()), 1) < strategy['density']:
+                # 根據密度隨機決定是否新增停頓
+                if random.random() < strategy['density']:
+                    # 避免太密集（最少間隔20個字符）
+                    if len(pause_points) == 0 or pos > pause_points[-1]['position'] + 20:
                         pause_points.append({
                             'position': pos,
                             'punctuation': punct,
@@ -197,7 +199,7 @@ class RuleBasedTagEngine:
         """統計標籤嵌入結果"""
         
         # 統計標籤數量
-        pause_count = len(re.findall(r'\[PAUSE=\w+\]', tagged_content))
+        pause_count = len(re.findall(r'\[PAUSE=[0-9.]+[a-z]*\]', tagged_content))
         voice_effect_count = len(re.findall(r'\[(?:laughing|chuckling|sighing|gasping|breathing|coughing|sniffing|groaning|giggles|amused|crying|sobbing|panting|yawning)\]', tagged_content))
         
         original_words = len(original_content.split())
