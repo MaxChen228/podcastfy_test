@@ -21,6 +21,15 @@ def load_config(config_path: str = "./podcast_config.yaml"):
     with open(config_path, 'r', encoding='utf-8') as f:
         return yaml.safe_load(f)
 
+def load_character_profiles(profiles_path: str = "./character_profiles.yaml"):
+    """載入角色設定檔案"""
+    try:
+        with open(profiles_path, 'r', encoding='utf-8') as f:
+            return yaml.safe_load(f)
+    except FileNotFoundError:
+        print(f"⚠️ 角色設定檔案未找到: {profiles_path}")
+        return {"character_profiles": {}, "voice_pairings": {}}
+
 def parse_input_sources(config):
     """解析輸入來源配置，支援單一/多資料來源"""
     input_config = config['input']
@@ -81,6 +90,7 @@ def generate_script_only(config_path: str = "./podcast_config.yaml"):
     
     # 載入配置
     config = load_config(config_path)
+    character_data = load_character_profiles()
     
     # 解析輸入來源
     sources, input_type = parse_input_sources(config)
@@ -91,6 +101,10 @@ def generate_script_only(config_path: str = "./podcast_config.yaml"):
     # 獲取等級和長度配置
     level_config = config['level_configs'][english_level]
     length_config = config['length_configs'][podcast_length]
+    
+    # 載入角色設定
+    character_profiles = character_data.get('character_profiles', {})
+    voice_pairings = character_data.get('voice_pairings', {})
     
     print(f"📥 輸入模式: {input_type}")
     if input_type == 'multi':
@@ -105,6 +119,28 @@ def generate_script_only(config_path: str = "./podcast_config.yaml"):
     print(f"📏 播客長度: {podcast_length} ({length_config['time_range']})")
     print(f"🤖 LLM 模型: {llm_model}")
     print(f"🎭 對話風格: {', '.join(level_config['conversation_style'])}")
+    
+    # 獲取聲線配置
+    host_voice = level_config.get('voices', {}).get('host_voice', 'Unknown')
+    expert_voice = level_config.get('voices', {}).get('expert_voice', 'Unknown')
+    
+    # 顯示角色資訊
+    print(f"🎙️ 主持人聲線: {host_voice}")
+    if host_voice in character_profiles:
+        host_char = character_profiles[host_voice]
+        print(f"   └── {host_char.get('name', 'Unknown')} ({host_char.get('profession', 'Unknown')})")
+    
+    print(f"🎙️ 專家聲線: {expert_voice}")
+    if expert_voice in character_profiles:
+        expert_char = character_profiles[expert_voice]
+        print(f"   └── {expert_char.get('name', 'Unknown')} ({expert_char.get('profession', 'Unknown')})")
+    
+    # 顯示配對動態
+    pairing_key = f"{host_voice}_{expert_voice}"
+    if pairing_key in voice_pairings:
+        pairing_info = voice_pairings[pairing_key]
+        print(f"🤝 配對動態: {pairing_info.get('dynamic', 'Standard Professional')}")
+        print(f"   └── {pairing_info.get('specialty', 'General discussion')}")
     
     # 新增結構化配置顯示
     print(f"🏗️ 結構深度: {level_config.get('structural_depth', 'balanced')}")
@@ -170,6 +206,12 @@ def generate_script_only(config_path: str = "./podcast_config.yaml"):
         "roles": ["Host", "Expert"]
     }
     
+    # 獲取角色個性資訊
+    host_char = character_profiles.get(host_voice, {})
+    expert_char = character_profiles.get(expert_voice, {})
+    pairing_key = f"{host_voice}_{expert_voice}"
+    pairing_info = voice_pairings.get(pairing_key, {})
+    
     # 構建詳細的 custom_instructions
     base_instructions = f"""
     Create a natural, structured conversation between two people with clearly defined roles exploring this topic.
@@ -181,16 +223,64 @@ def generate_script_only(config_path: str = "./podcast_config.yaml"):
     INTERACTION: {level_config['interaction_level']} interaction
     STRUCTURAL DEPTH: {level_config.get('structural_depth', 'balanced')}
     
-    === ROLE DEFINITIONS ===
-    Person1 (HOST): {level_config.get('roles_person1', 'Host - Concept Breaker & Discussion Leader')}
-    Person2 (EXPERT): {level_config.get('roles_person2', 'Expert - Content Specialist & Knowledge Provider')}
+    === CHARACTER PROFILES ==="""
     
+    # 添加主持人角色資訊
+    if host_char:
+        host_traits = ', '.join(host_char.get('personality_traits', {}).get('core', []))
+        host_phrases = host_char.get('signature_phrases', {}).get('openings', [])[:3]
+        base_instructions += f"""
+    
+    Person1 (HOST) - {host_char.get('name', host_voice)}:
+    ROLE: {level_config.get('roles_person1', 'Host - Discussion Leader')}
+    BACKGROUND: {host_char.get('background', 'Professional host')}
+    PERSONALITY: {host_traits}
+    SPEAKING STYLE: {host_char.get('speaking_characteristics', {}).get('tone', 'Professional and clear')}
+    SIGNATURE PHRASES: {', '.join(f'"{phrase}"' for phrase in host_phrases)}
+    EXPERTISE: {', '.join(host_char.get('expertise_areas', [])[:4])}"""
+    else:
+        base_instructions += f"""
+    
+    Person1 (HOST): {level_config.get('roles_person1', 'Host - Discussion Leader')}"""
+    
+    # 添加專家角色資訊
+    if expert_char:
+        expert_traits = ', '.join(expert_char.get('personality_traits', {}).get('core', []))
+        expert_phrases = expert_char.get('signature_phrases', {}).get('analysis', expert_char.get('signature_phrases', {}).get('observations', []))[:3]
+        base_instructions += f"""
+    
+    Person2 (EXPERT) - {expert_char.get('name', expert_voice)}:
+    ROLE: {level_config.get('roles_person2', 'Expert - Content Specialist')}
+    BACKGROUND: {expert_char.get('background', 'Subject matter expert')}
+    PERSONALITY: {expert_traits}
+    SPEAKING STYLE: {expert_char.get('speaking_characteristics', {}).get('tone', 'Knowledgeable and engaging')}
+    SIGNATURE PHRASES: {', '.join(f'"{phrase}"' for phrase in expert_phrases)}
+    EXPERTISE: {', '.join(expert_char.get('expertise_areas', [])[:4])}"""
+    else:
+        base_instructions += f"""
+    
+    Person2 (EXPERT): {level_config.get('roles_person2', 'Expert - Content Specialist')}"""
+    
+    # 添加配對動態資訊
+    if pairing_info:
+        base_instructions += f"""
+    
+    === PAIRING DYNAMIC ===
+    CHEMISTRY: {pairing_info.get('dynamic', 'Professional collaboration')}
+    INTERACTION PATTERN: {pairing_info.get('interaction_pattern', 'Balanced discussion')}
+    SPECIALTY: {pairing_info.get('specialty', 'General expertise sharing')}
+    """
+    
+    base_instructions += f"""
+    
+    === CORE RESPONSIBILITIES ===
     HOST RESPONSIBILITIES:
     - Opening the show and setting the agenda
     - Breaking down complex concepts into understandable parts
     - Asking clarifying questions to help audience understanding
     - Language teaching (intensity varies by level: A1=heavy, B1=moderate, C1=minimal)
     - Maintaining conversation flow and pacing
+    - Embodying their character's personality and speaking style
     
     EXPERT RESPONSIBILITIES:  
     - Providing detailed content knowledge and explanations
@@ -198,6 +288,7 @@ def generate_script_only(config_path: str = "./podcast_config.yaml"):
     - Sharing insights and professional perspectives
     - Supporting Host's concept-breaking with examples and elaboration
     - Focusing primarily on content accuracy and completeness
+    - Demonstrating their character's expertise and communication style
     
     === DIALOGUE STRUCTURE ===
     Follow this {len(level_config['dialogue_structure'])}-part structure naturally:
@@ -225,91 +316,104 @@ def generate_script_only(config_path: str = "./podcast_config.yaml"):
     {chr(10).join('- "' + marker + '"' for marker in level_config['conversation_markers'])}
     """
     
-    # 添加等級專用的 AVOID/EMBRACE 指導
+    # 添加等級專用的 AVOID/EMBRACE 指導，整合角色個性
     level_specific = ""
     if english_level == 'A1':
-        level_specific = """
+        host_name = host_char.get('name', host_voice)
+        expert_name = expert_char.get('name', expert_voice)
+        level_specific = f"""
         
         === A1 HOST-EXPERT DYNAMIC ===
-        HOST (English Teacher): 
+        HOST ({host_name} - English Teacher): 
         - LEAD the conversation with heavy language teaching focus (80%)
-        - Break down every complex word and concept immediately  
+        - Break down every complex word and concept immediately using your {host_char.get('speaking_characteristics', {}).get('tone', 'warm and patient')} approach
         - Ask EXPERT to pause for vocabulary/grammar explanations
-        - Use teaching markers: "In English, we often say...", "A useful phrase here is...", "Notice the grammar pattern..."
-        - Constantly check understanding: "Do you understand?", "Can you repeat that?"
+        - Use your signature teaching style: {host_char.get('signature_phrases', {}).get('clarifications', ['Let me break this down...'])[0] if host_char.get('signature_phrases', {}).get('clarifications') else 'Let me explain this clearly...'}
+        - Constantly check understanding with encouraging phrases like: "{host_char.get('signature_phrases', {}).get('encouragement', ['You are doing great!'])[0] if host_char.get('signature_phrases', {}).get('encouragement') else 'Do you understand?'}"
+        - Embody your background as {host_char.get('profession', 'an experienced teacher')}
         
-        EXPERT (Patient Content Provider):
-        - WAIT for HOST's language teaching moments
-        - Provide simple, clear content explanations when asked
-        - Support HOST's teaching with examples and context
-        - Use basic vocabulary, speak slowly and clearly
-        - Let HOST dominate the conversation rhythm
+        EXPERT ({expert_name} - Patient Content Provider):
+        - WAIT for HOST's language teaching moments with your {expert_char.get('speaking_characteristics', {}).get('tone', 'enthusiastic')} personality
+        - Provide simple, clear content explanations when asked, showing your {', '.join(expert_char.get('personality_traits', {}).get('core', ['helpful'])[:2])} nature
+        - Support HOST's teaching with examples from your expertise in {', '.join(expert_char.get('expertise_areas', ['general topics'])[:2])}
+        - Use basic vocabulary, speak with your characteristic {expert_char.get('speaking_characteristics', {}).get('pace', 'measured pace')}
+        - Let HOST dominate the conversation rhythm while contributing your natural curiosity
         
-        INTERACTION FLOW: HOST asks → EXPERT explains simply → HOST teaches language → HOST asks next question
+        INTERACTION FLOW: {host_name} asks → {expert_name} explains simply → {host_name} teaches language → {host_name} asks next question
+        CHARACTER CHEMISTRY: {pairing_info.get('chemistry', 'Teacher and eager learner working together')}
         """
     elif english_level == 'A2':  
-        level_specific = """
+        host_name = host_char.get('name', host_voice)
+        expert_name = expert_char.get('name', expert_voice)
+        level_specific = f"""
         
         === A2 HOST-EXPERT DYNAMIC ===
-        HOST (Friendly Language Guide):
-        - GUIDE the conversation with natural language teaching (60%)
-        - Introduce useful phrases and expressions contextually
-        - Ask EXPERT to demonstrate natural language usage
-        - Use guidance markers: "Here's how native speakers say it...", "A natural way to express this is...", "You might also hear..."
-        - Encourage EXPERT to use more natural expressions
+        HOST ({host_name} - Friendly Language Guide):
+        - GUIDE the conversation with natural language teaching (60%) using your {host_char.get('speaking_characteristics', {}).get('tone', 'warm')} personality
+        - Introduce useful phrases and expressions contextually, drawing from your expertise in {', '.join(host_char.get('expertise_areas', ['language teaching'])[:2])}
+        - Ask EXPERT to demonstrate natural language usage with your characteristic curiosity
+        - Use your signature guidance style: "{host_char.get('signature_phrases', {}).get('transitions', ['Let me show you another way...'])[0] if host_char.get('signature_phrases', {}).get('transitions') else 'Here is how native speakers say it...'}"
+        - Encourage EXPERT with your naturally {', '.join(host_char.get('personality_traits', {}).get('core', ['supportive']))} approach
         
-        EXPERT (Patient Teacher):
-        - COLLABORATE with HOST on language demonstrations
-        - Provide content knowledge with clear, natural expressions
-        - Offer alternative ways to say things when prompted by HOST
-        - Use slightly more complex vocabulary with HOST's guidance
-        - Support HOST's teaching with real-world examples
+        EXPERT ({expert_name} - Patient Teacher):
+        - COLLABORATE with HOST on language demonstrations using your {expert_char.get('speaking_characteristics', {}).get('tone', 'knowledgeable')} style
+        - Provide content knowledge with clear, natural expressions, showing your background in {expert_char.get('profession', 'content expertise')}
+        - Offer alternative ways to say things when prompted by HOST, using your {', '.join(expert_char.get('personality_traits', {}).get('core', ['helpful']))} nature
+        - Use slightly more complex vocabulary with HOST's guidance, maintaining your characteristic {expert_char.get('speaking_characteristics', {}).get('pace', 'thoughtful pace')}
+        - Support HOST's teaching with examples from your expertise
         
-        INTERACTION FLOW: HOST introduces topic → EXPERT explains → HOST guides language → Both explore together
+        INTERACTION FLOW: {host_name} introduces topic → {expert_name} explains → {host_name} guides language → Both explore together
+        CHARACTER CHEMISTRY: {pairing_info.get('chemistry', 'Collaborative language exploration')}
         """
     elif english_level == 'B1':
-        level_specific = """
+        host_name = host_char.get('name', host_voice)
+        expert_name = expert_char.get('name', expert_voice)
+        level_specific = f"""
         
         === B1 HOST-EXPERT DYNAMIC ===
-        HOST (Conversational Language Coach):
-        - MODERATE the conversation with integrated language coaching (40%)
-        - Weave in language tips during natural conversation flow
-        - Appreciate EXPERT's language use: "That's a great way to put it..."
-        - Offer alternatives: "Another way to say this would be...", "Native speakers often use..."
-        - Balance content exploration with language guidance
+        HOST ({host_name} - Conversational Language Coach):
+        - MODERATE the conversation with integrated language coaching (40%) using your {host_char.get('speaking_characteristics', {}).get('tone', 'balanced')} style
+        - Weave in language tips during natural conversation flow, showing your {', '.join(host_char.get('personality_traits', {}).get('core', ['thoughtful']))} personality
+        - Appreciate EXPERT's language use with phrases like: "{host_char.get('signature_phrases', {}).get('appreciation', host_char.get('signature_phrases', {}).get('observations', ['That is fascinating...']))[0] if host_char.get('signature_phrases', {}).get('appreciation') or host_char.get('signature_phrases', {}).get('observations') else 'That is a great way to put it...'}"
+        - Offer alternatives naturally, drawing from your expertise in {', '.join(host_char.get('expertise_areas', ['communication'])[:2])}
+        - Balance content exploration with language guidance using your professional background
         
-        EXPERT (Knowledgeable Discussant):
-        - ENGAGE in substantial content discussion with HOST
-        - Use varied vocabulary and expressions naturally
-        - Welcome HOST's language coaching and build on it
-        - Provide detailed explanations and insights
-        - Share the conversation space more equally with HOST
+        EXPERT ({expert_name} - Knowledgeable Discussant):
+        - ENGAGE in substantial content discussion with HOST using your {expert_char.get('speaking_characteristics', {}).get('tone', 'engaging')} communication style
+        - Use varied vocabulary and expressions naturally, reflecting your {', '.join(expert_char.get('personality_traits', {}).get('core', ['knowledgeable']))} nature
+        - Welcome HOST's language coaching and build on it with your characteristic {expert_char.get('speaking_characteristics', {}).get('emphasis', 'thoughtful emphasis')}
+        - Provide detailed explanations from your expertise in {', '.join(expert_char.get('expertise_areas', ['subject matter'])[:3])}
+        - Share the conversation space more equally, showing your {', '.join(expert_char.get('personality_traits', {}).get('communication', ['articulate']))} traits
         
-        INTERACTION FLOW: HOST moderates → EXPERT discusses deeply → HOST coaches language → Both explore implications
+        INTERACTION FLOW: {host_name} moderates → {expert_name} discusses deeply → {host_name} coaches language → Both explore implications
+        CHARACTER CHEMISTRY: {pairing_info.get('chemistry', 'Balanced professional dialogue')}
         """
     else:  # B2, C1, C2
+        host_name = host_char.get('name', host_voice)
+        expert_name = expert_char.get('name', expert_voice)
         level_specific = f"""
         
         === {english_level} HOST-EXPERT DYNAMIC ===
-        HOST (Professional Moderator):
-        - FACILITATE sophisticated content exploration  
-        - Break down complex concepts for audience understanding
-        - Ask probing questions to deepen analysis
-        - Minimal language focus - only when truly beneficial
-        - Guide conversation toward key insights and implications
+        HOST ({host_name} - Professional Moderator):
+        - FACILITATE sophisticated content exploration using your {host_char.get('speaking_characteristics', {}).get('tone', 'authoritative')} presence
+        - Break down complex concepts for audience understanding, leveraging your background in {host_char.get('profession', 'professional moderation')}
+        - Ask probing questions to deepen analysis with your signature style: "{host_char.get('signature_phrases', {}).get('inquiry', host_char.get('signature_phrases', {}).get('observations', ['What strikes me is...']))[0] if host_char.get('signature_phrases', {}).get('inquiry') or host_char.get('signature_phrases', {}).get('observations') else 'The real question here is...'}"
+        - Minimal language focus - only when truly beneficial, showing your {', '.join(host_char.get('personality_traits', {}).get('core', ['strategic']))} nature
+        - Guide conversation toward key insights using your expertise in {', '.join(host_char.get('expertise_areas', ['analysis'])[:2])}
         
-        EXPERT (Domain Authority):
-        - PROVIDE in-depth knowledge and professional insights
-        - Engage in sophisticated analysis and discussion  
-        - Share specialized perspectives and experience
-        - Use technical language appropriately for audience level
-        - Take substantial conversation space for detailed explanations
+        EXPERT ({expert_name} - Domain Authority):
+        - PROVIDE in-depth knowledge and professional insights using your {expert_char.get('speaking_characteristics', {}).get('tone', 'authoritative')} communication style
+        - Engage in sophisticated analysis and discussion, drawing from your extensive background: {expert_char.get('background', 'Professional expertise')}
+        - Share specialized perspectives from your expertise in {', '.join(expert_char.get('expertise_areas', ['specialized knowledge'])[:3])}
+        - Use technical language appropriately, reflecting your {', '.join(expert_char.get('personality_traits', {}).get('core', ['expert']))} credentials
+        - Take substantial conversation space for detailed explanations with your characteristic {expert_char.get('speaking_characteristics', {}).get('emphasis', 'confident delivery')}
         
-        INTERACTION FLOW: HOST facilitates → EXPERT analyzes deeply → HOST synthesizes → EXPERT provides implications
+        INTERACTION FLOW: {host_name} facilitates → {expert_name} analyzes deeply → {host_name} synthesizes → {expert_name} provides implications
+        CHARACTER CHEMISTRY: {pairing_info.get('chemistry', 'Professional expertise sharing')}
         FOCUS: Content-driven discussion with sophisticated concept exploration
         """
     
-    # 組合完整指令
+    # 組合完整指令，添加明確的長度控制
     conversation_config["user_instructions"] = base_instructions + level_specific + f"""
     
     === CONVERSATION GUIDELINES ===
@@ -320,9 +424,17 @@ def generate_script_only(config_path: str = "./podcast_config.yaml"):
     - Concept breaking is always HOST's primary job
     - Content expertise is always EXPERT's primary job
     
-    TARGET: {length_config['time_range']} of natural, engaging conversation
+    === LENGTH REQUIREMENTS ===
+    TARGET LENGTH: {word_count} words ({length_config['time_range']})
     APPROACH: {length_config['approach']}
+    IMPORTANT: Generate EXACTLY {word_count} words, no more, no less.
+    Stop the conversation naturally when approaching {word_count} words.
+    Conclude with a proper ending rather than cutting off mid-sentence.
     """
+    
+    # 輸出指令長度用於調試
+    instruction_length = len(conversation_config["user_instructions"])
+    print(f"🔍 Instructions length: {instruction_length} characters (~{instruction_length//4} tokens)")
     
     # 根據長度設定決定是否啟用 longform 模式
     use_longform = (podcast_length == "extra-long")

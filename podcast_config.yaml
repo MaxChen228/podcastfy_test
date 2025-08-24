@@ -26,7 +26,7 @@ basic:
 input:
   # 多資料來源支援
   sources:
-    - "https://www.popsci.com/gear/best-of-ces-2025/"
+    - "/Users/chenliangyu/Desktop/podcastfy_test/claude_code.txt"
   type: "multi"
 
 # ┌─────────────────────────────────────────────────────────────────────────┐
